@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="414" height="132" viewBox="0 0 414 132">
+  <!-- Maison -->
+  <path d="M66 7 L127 58 L113 58 L113 127 L19 127 L19 58 L5 58 Z" fill="#2B3A5C" stroke="#2B3A5C" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Repère de carte -->
+  <path d="M66 46 C47 46 34 60 34 77 C34 98 66 121 66 121 C66 121 98 98 98 77 C98 60 85 46 66 46 Z" fill="#2E9E4F"/>
+  <!-- Pompe à essence -->
+  <g fill="#FFFFFF">
+    <rect x="52" y="61" width="21" height="31" rx="3"/>
+    <rect x="49" y="91" width="27" height="5" rx="2"/>
+  </g>
+  <rect x="56" y="65" width="13" height="9" rx="1.5" fill="#2E9E4F"/>
+  <path d="M73 67 L79 72 L79 86 Q79 90 82 90 Q85 90 85 86 L85 73 L81 68" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Texte -->
+  <text x="146" y="58" font-family="DejaVu Sans" font-weight="bold" font-size="46" fill="#2B3A5C">Fuel</text>
+  <text x="146" y="107" font-family="DejaVu Sans" font-size="46" fill="#2B3A5C">Map Card</text>
+</svg>

@@ -1,6 +1,12 @@
 # Fuel Map Card
 
+<img src="docs/logo.png" alt="Fuel Map Card" width="300">
+
 [🇫🇷 Version française](README.md)
+
+[![Release](https://img.shields.io/github/v/release/akoonet-homeassistant/Fuel-Map-Card)](https://github.com/akoonet-homeassistant/Fuel-Map-Card/releases)
+[![License](https://img.shields.io/github/license/akoonet-homeassistant/Fuel-Map-Card)](LICENSE)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
 
 A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or a person), with their prices, on a map and in a list. Data comes from the [Prix Carburant](https://github.com/Aohzan/hass-prixcarburant) integration (French fuel prices).
 
