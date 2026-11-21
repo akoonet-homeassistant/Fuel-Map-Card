@@ -30,7 +30,7 @@ import {
   brandFromName,
 } from "./utils.js";
 
-const VERSION = "2026.11.2";
+const VERSION = "2026.11.3";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const SENSOR_INDEX_TTL = 5 * 60000;
@@ -151,8 +151,12 @@ class FuelMapCard extends HTMLElement {
 
   connectedCallback() {
     if (this._config && !this._built && this._hass) this._build();
+    clearInterval(this._timer);
     this._timer = setInterval(() => this._update(false, true), TICK_MS);
-    if (this._map) requestAnimationFrame(() => this._map && this._map.invalidateSize());
+    // HA fournit hass avant d'afficher la vue : on lance la recherche dès l'affichage.
+    // HA sets hass before the view is shown: search as soon as the card is displayed.
+    this._update(false, true);
+    if (this._map) requestAnimationFrame(() => this._onMapResize());
   }
 
   disconnectedCallback() {
@@ -203,7 +207,7 @@ class FuelMapCard extends HTMLElement {
     this._card = card;
     this._built = true;
 
-    this._resizeObs = new ResizeObserver(() => this._map && this._map.invalidateSize());
+    this._resizeObs = new ResizeObserver(() => this._onMapResize());
     this._resizeObs.observe(this._mapEl);
     this._applyLayout();
   }
@@ -674,14 +678,30 @@ class FuelMapCard extends HTMLElement {
     }
     const cur = this._carMarker.getLatLng();
     if (cur.lat !== pos.lat || cur.lng !== pos.lon) this._carMarker.setLatLng([pos.lat, pos.lon]);
-    if (!this._centered && !this._fitted) {
+    if (!this._centered && !this._fitted && this._mapEl.clientWidth) {
       this._map.setView([pos.lat, pos.lon], 12);
       this._centered = true;
     }
   }
 
+  /** Carte (re)devenue visible ou redimensionnée. Map shown again or resized. */
+  _onMapResize() {
+    if (!this._map) return;
+    this._map.invalidateSize();
+    if (this._needsFit && this._mapEl.clientWidth > 0) {
+      this._needsFit = false;
+      this._fitted = false;
+      this._fitAll(false);
+    }
+  }
+
   _fitAll(animate) {
     if (!this._map) return;
+    // Carte masquée (vue non affichée) : cadrer plus tard. Hidden map: fit later.
+    if (!this._mapEl.clientWidth) {
+      this._needsFit = true;
+      return;
+    }
     const pts = this._visible.map((s) => [s.lat, s.lon]);
     if (this._carMarker && this._config.show_car) pts.push(this._carMarker.getLatLng());
     if (!pts.length) return;

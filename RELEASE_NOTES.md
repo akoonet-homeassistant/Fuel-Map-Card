@@ -1,17 +1,11 @@
-# Fuel Map Card 2026.11.2
+# Fuel Map Card 2026.11.3
 
-## 🇫🇷 Nouveautés
+## 🇫🇷 Correction
 
-- **Plusieurs carburants** : choisissez un ou plusieurs carburants (E10, SP95, SP98, Gazole, E85, GPLc). Des onglets permettent de passer de l'un à l'autre ; la carte, la liste, les couleurs de prix et la date de mise à jour suivent le carburant affiché. L'ancienne option `fuel` reste acceptée.
-- **Ordre d'affichage** : carte puis liste, ou liste puis carte (option `layout`).
-- **Choix du fond de carte** (option `map_style`) : OpenStreetMap, OpenStreetMap France, CARTO clair, sombre ou Voyager, automatique (clair ou sombre selon le thème), relief (OpenTopoMap), satellite (Esri) ou URL personnalisée.
-- Nouvelle option `dark_filter` : assombrir ou non les fonds de carte clairs en thème sombre.
-- Si la recherche échoue pour un carburant, les autres restent affichés et l'erreur n'apparaît que sur l'onglet concerné.
+- **La carte restait vide en arrivant sur la vue** : Home Assistant prépare les cartes avant d'afficher la vue, et la recherche n'était alors lancée qu'à l'actualisation suivante (ou avec le bouton Actualiser). Elle démarre désormais dès que la carte s'affiche.
+- Le cadrage de la carte est recalculé quand elle devient visible, au lieu de rester sur un zoom calculé pendant qu'elle était masquée.
 
-## 🇬🇧 What's new
+## 🇬🇧 Fix
 
-- **Several fuels**: pick one or more fuels (E10, SP95, SP98, Gazole, E85, GPLc). Tabs let you switch between them; the map, list, price colors and update date follow the displayed fuel. The legacy `fuel` option is still accepted.
-- **Display order**: map then list, or list then map (`layout` option).
-- **Basemap choice** (`map_style` option): OpenStreetMap, OpenStreetMap France, CARTO light, dark or Voyager, automatic (light or dark with the theme), terrain (OpenTopoMap), satellite (Esri) or a custom URL.
-- New `dark_filter` option: whether to darken light basemaps in dark theme.
-- If the search fails for one fuel, the others stay visible and the error only shows on that fuel's tab.
+- **The card stayed empty when opening the view**: Home Assistant prepares cards before showing the view, and the search only ran at the next refresh (or with the Refresh button). It now starts as soon as the card is displayed.
+- The map framing is recomputed when the map becomes visible, instead of keeping a zoom computed while it was hidden.
