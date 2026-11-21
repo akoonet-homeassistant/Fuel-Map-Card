@@ -6,6 +6,7 @@ import { MAP_STYLE_IDS } from "./tiles.js";
 export const FUELS = ["E10", "SP95", "SP98", "Gazole", "E85", "GPLc"];
 
 export const LAYOUTS = ["map_first", "list_first"];
+export const MAX_STATIONS = 50;
 
 export const DEFAULTS = Object.freeze({
   fuels: ["E10"],
@@ -14,6 +15,7 @@ export const DEFAULTS = Object.freeze({
   dark_filter: true,
   distance: 10,
   max_stations: 10,
+  include_sensors: true,
   sort: "price",
   show_list: true,
   show_map: true,
@@ -34,7 +36,7 @@ export const DEFAULTS = Object.freeze({
 });
 
 export const TOGGLES = [
-  "dark_filter", "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
+  "dark_filter", "include_sensors", "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
   "show_zoom_controls", "show_car", "show_logo", "show_distance", "show_updated",
   "show_price_colors", "show_directions",
 ];
@@ -76,7 +78,7 @@ export function normalizeConfig(raw) {
     map_style: MAP_STYLE_IDS.includes(raw.map_style) ? raw.map_style : DEFAULTS.map_style,
     tile_url: typeof raw.tile_url === "string" ? raw.tile_url.trim() : undefined,
     distance: clampInt(raw.distance, 1, 50, DEFAULTS.distance),
-    max_stations: clampInt(raw.max_stations, 1, 10, DEFAULTS.max_stations),
+    max_stations: clampInt(raw.max_stations, 1, MAX_STATIONS, DEFAULTS.max_stations),
     sort: raw.sort === "distance" ? "distance" : "price",
     ...Object.fromEntries(TOGGLES.map((k) => [k, raw[k] !== false])),
     map_height: clampInt(raw.map_height, 150, 1000, DEFAULTS.map_height),
@@ -154,10 +156,16 @@ export function buildSensorIndex(states) {
     if (!a || a.station_id == null || a.fuel_type == null) continue;
     const pos = positionOf(st);
     if (!pos) continue;
+    const price = Number(st.state);
+    const address = [a.address, [a.postal_code, a.city].filter(Boolean).join(" ")]
+      .filter((x) => typeof x === "string" && x.trim())
+      .join(", ");
     index.push({
       entityId,
       lat: pos.lat,
       lon: pos.lon,
+      price: Number.isFinite(price) && price > 0 ? price : null,
+      address: address.slice(0, 200),
       fuel: String(a.fuel_type),
       updated: typeof a.updated_date === "string" ? a.updated_date : null,
       picture: typeof a.entity_picture === "string" ? a.entity_picture : null,
@@ -267,6 +275,29 @@ export function brandFromName(...texts) {
     }
   }
   return null;
+}
+
+/**
+ * Stations suivies par des capteurs Prix Carburant, dans le rayon, pour ce
+ * carburant, absentes des résultats de l'action (quel que soit leur prix).
+ * Stations tracked by Prix Carburant sensors within the radius, for this fuel,
+ * missing from the action results (whatever their price).
+ */
+export function sensorStations(index, fuel, pos, radiusKm, existing = []) {
+  if (!pos) return [];
+  const out = [];
+  const seen = new Set();
+  for (const s of index) {
+    if (s.price == null || s.fuel.toLowerCase() !== fuel.toLowerCase()) continue;
+    if (haversineKm(pos.lat, pos.lon, s.lat, s.lon) > radiusKm) continue;
+    const dup = (x) => Math.abs(x.lat - s.lat) <= MATCH_TOLERANCE_DEG && Math.abs(x.lon - s.lon) <= MATCH_TOLERANCE_DEG;
+    if (existing.some(dup) || out.some(dup)) continue;
+    const id = stationKey(s.lat, s.lon);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, name: s.name || "", address: s.address || "", lat: s.lat, lon: s.lon, price: s.price, fromSensor: true });
+  }
+  return out;
 }
 
 /** Jours calendaires écoulés (J+n). Calendar days elapsed (D+n). */

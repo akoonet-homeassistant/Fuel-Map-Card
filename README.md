@@ -51,7 +51,7 @@ Ou en dépôt personnalisé :
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.4`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.5`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration
@@ -75,7 +75,8 @@ map_style: osm
 | `entity` | — | **Obligatoire.** Entité à suivre (`device_tracker`, `person`). |
 | `fuels` | `[E10]` | Un ou plusieurs carburants parmi `E10`, `SP95`, `SP98`, `Gazole`, `E85`, `GPLc`. Avec plusieurs carburants, des onglets apparaissent. L'ancienne option `fuel: E10` reste acceptée. |
 | `distance` | `10` | Rayon de recherche en km (1 à 50). |
-| `max_stations` | `10` | Nombre de stations affichées (1 à 10). |
+| `max_stations` | `10` | Nombre de stations affichées (1 à 50). |
+| `include_sensors` | `true` | Ajoute toutes les stations de vos capteurs Prix Carburant situées dans le rayon, quel que soit leur prix. |
 | `sort` | `price` | Tri de la liste : `price` (prix) ou `distance`. |
 | `layout` | `map_first` | Ordre d'affichage : `map_first` (carte puis liste) ou `list_first` (liste puis carte). |
 | `show_map` | `true` | Afficher la carte. |
@@ -101,7 +102,7 @@ map_style: osm
 
 ## Bon à savoir
 
-- **10 stations au maximum** : l'action Prix Carburant renvoie les 10 stations les moins chères du rayon.
+- **Stations affichées** : l'action Prix Carburant ne renvoie que les 10 stations les moins chères du rayon. Avec `include_sensors`, la carte y ajoute toutes les stations de vos capteurs Prix Carburant situées dans le rayon, quel que soit leur prix : avec le tri par distance, vous voyez ainsi toutes les stations proches que vous suivez. Hors de la zone de vos capteurs, seules les 10 moins chères apparaissent.
 - **Date de mise à jour** : l'action ne la fournit pas. La carte la reprend des capteurs Prix Carburant déjà configurés (même station, même carburant). Pour une station sans capteur, la colonne affiche « — ».
 - **Logos** : ce sont ceux de l'intégration Prix Carburant. La carte prend le logo du capteur de la station s'il existe, sinon elle reconnaît l'enseigne dans le nom (Intermarché, Carrefour, Super U, Esso, Total…, les « Relais » étant des TotalEnergies). Une station dont le nom ne contient pas l'enseigne et qui n'a pas de capteur garde l'icône générique.
 - **Distance** : calculée à vol d'oiseau depuis la position de l'entité, pas par la route.

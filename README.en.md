@@ -51,7 +51,7 @@ Or as a custom repository:
 ### Manual installation
 
 1. Copy `dist/fuel-map-card.js` to `/config/www/fuel-map-card/`.
-2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.4`, type **JavaScript module**.
+2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.5`, type **JavaScript module**.
 3. Reload the browser page.
 
 ## Configuration
@@ -75,7 +75,8 @@ map_style: osm
 | `entity` | — | **Required.** Entity to follow (`device_tracker`, `person`). |
 | `fuels` | `[E10]` | One or more fuels among `E10`, `SP95`, `SP98`, `Gazole`, `E85`, `GPLc`. With several fuels, tabs are shown. The legacy `fuel: E10` option is still accepted. |
 | `distance` | `10` | Search radius in km (1 to 50). |
-| `max_stations` | `10` | Number of stations shown (1 to 10). |
+| `max_stations` | `10` | Number of stations shown (1 to 50). |
+| `include_sensors` | `true` | Adds every station of your Prix Carburant sensors within the radius, whatever its price. |
 | `sort` | `price` | List order: `price` or `distance`. |
 | `layout` | `map_first` | Display order: `map_first` (map then list) or `list_first` (list then map). |
 | `show_map` | `true` | Show the map. |
@@ -101,7 +102,7 @@ map_style: osm
 
 ## Good to know
 
-- **10 stations at most**: the Prix Carburant action returns the 10 cheapest stations within the radius.
+- **Stations shown**: the Prix Carburant action only returns the 10 cheapest stations within the radius. With `include_sensors`, the card adds every station of your Prix Carburant sensors within the radius, whatever its price: sorted by distance, you see all the nearby stations you track. Outside your sensors' area, only the 10 cheapest are shown.
 - **Last update date**: the action does not provide it. The card reads it from the Prix Carburant sensors you already have (same station, same fuel). Stations without a sensor show "—".
 - **Logos**: they are the Prix Carburant integration's logos. The card uses the station sensor's logo when there is one, otherwise it recognizes the brand in the name (Intermarché, Carrefour, Super U, Esso, Total…, "Relais" stations being TotalEnergies). A station whose name has no brand and that has no sensor keeps the generic icon.
 - **Distance**: straight-line distance from the entity's position, not by road.

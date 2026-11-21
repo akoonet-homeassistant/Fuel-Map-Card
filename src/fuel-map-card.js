@@ -28,9 +28,10 @@ import {
   safeImageUrl,
   cityOf,
   brandFromName,
+  sensorStations,
 } from "./utils.js";
 
-const VERSION = "2026.11.4";
+const VERSION = "2026.11.5";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const SENSOR_INDEX_TTL = 5 * 60000;
@@ -310,8 +311,9 @@ class FuelMapCard extends HTMLElement {
     this._map?.closePopup();
     this._markActiveTab();
     this._updateSubtitle();
-    this._showFuelStatus();
+    this._extrasSig = null;
     this._recomputeDistances(this._pos, true);
+    this._showFuelStatus();
   }
 
   _updateSubtitle() {
@@ -326,7 +328,7 @@ class FuelMapCard extends HTMLElement {
     if (this._msgKind === "state") return;
     const err = this._fuelErrors.get(this._active);
     if (err) this._setMessage(t(this._hass, "err_fetch", { error: err }), "fetch");
-    else if (this._data.has(this._active) && !this._stations.length)
+    else if (this._data.has(this._active) && !this._visible.length)
       this._setMessage(t(this._hass, "no_station", { km: this._config.distance }), "info");
     else if (this._data.has(this._active)) this._setMessage(null);
   }
@@ -460,14 +462,26 @@ class FuelMapCard extends HTMLElement {
     if (!force && now - this._sensorIndexAt < SENSOR_INDEX_TTL) return;
     this._sensorIndex = buildSensorIndex(this._hass?.states);
     this._sensorIndexAt = now;
-    if (!force && this._stations.length) this._recomputeDistances(this._lastPos, true);
+    if (!force && this._data.size) this._recomputeDistances(this._pos || this._lastPos, true);
   }
 
   _recomputeDistances(pos, forceRender = false) {
     if (!pos) return;
     const c = this._config;
     let changed = forceRender;
-    for (const s of this._stations) {
+    // Stations de l'action + stations des capteurs dans le rayon (quel que soit le prix).
+    // Action stations + sensor stations within the radius (whatever the price).
+    const base = this._stations;
+    const extras = c.include_sensors && this._data.has(this._active)
+      ? sensorStations(this._sensorIndex, this._active, pos, c.distance, base)
+      : [];
+    const sig = extras.map((x) => `${x.id}:${x.price}`).join("|");
+    if (sig !== this._extrasSig) {
+      this._extrasSig = sig;
+      changed = true;
+    }
+    const all = base.concat(extras);
+    for (const s of all) {
       const d = haversineKm(pos.lat, pos.lon, s.lat, s.lon);
       if (s.distance == null || Math.abs(d - s.distance) > 0.1) changed = true;
       s.distance = d;
@@ -485,7 +499,7 @@ class FuelMapCard extends HTMLElement {
       Object.assign(s, m);
     }
     if (!changed) return;
-    this._visible = sortStations(this._stations, c.sort, c.max_stations);
+    this._visible = sortStations(all, c.sort, c.max_stations);
     this._renderAll();
   }
 

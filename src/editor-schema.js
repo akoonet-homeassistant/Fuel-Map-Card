@@ -42,7 +42,7 @@ export const editorSchema = (hass, data = {}) => [
         name: "",
         schema: [
           num("distance", 1, 50, 1, "km"),
-          num("max_stations", 1, 10, 1),
+          num("max_stations", 1, 50, 1),
           {
             name: "sort",
             selector: {
@@ -57,6 +57,7 @@ export const editorSchema = (hass, data = {}) => [
           },
         ],
       },
+      bool("include_sensors"),
     ],
     true,
   ),
