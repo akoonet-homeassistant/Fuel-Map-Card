@@ -97,14 +97,14 @@ button.icon-btn.spin ha-icon, button.icon-btn.spin .glyph { animation: fmc-spin 
   padding: 12px 16px; font-size: 14px; color: var(--secondary-text-color);
 }
 .msg.error { color: var(--error-color, #db4437); }
-.msg[hidden] { display: none; }
+.msg[hidden], .header[hidden], [hidden] { display: none !important; }
 
 /* Liste. List. */
 .list { padding: 4px 0 8px; }
 .list[hidden] { display: none; }
 .row {
   display: grid; align-items: center; column-gap: 10px;
-  grid-template-columns: 32px minmax(0, 1fr) 58px 64px 34px;
+  grid-template-columns: var(--fmc-cols, 32px minmax(0, 1fr) 58px 64px 34px);
   padding: 7px 12px 7px 16px; cursor: pointer;
   border-left: 3px solid transparent;
   outline: none;
@@ -139,7 +139,7 @@ button.icon-btn.spin ha-icon, button.icon-btn.spin .glyph { animation: fmc-spin 
 .row.high .price { color: #c62828; }
 .list .head {
   display: grid; column-gap: 10px;
-  grid-template-columns: 32px minmax(0, 1fr) 58px 64px 34px;
+  grid-template-columns: var(--fmc-cols, 32px minmax(0, 1fr) 58px 64px 34px);
   padding: 0 12px 2px 19px; font-size: 11px; text-transform: uppercase;
   letter-spacing: .04em; color: var(--secondary-text-color);
 }

@@ -14,7 +14,23 @@ export const DEFAULTS = Object.freeze({
   refresh_interval: 30,
   min_move: 500,
   min_delay: 2,
+  show_header: true,
+  show_refresh_button: true,
+  show_recenter_button: true,
+  show_zoom_controls: true,
+  show_car: true,
+  show_logo: true,
+  show_distance: true,
+  show_updated: true,
+  show_price_colors: true,
+  show_directions: true,
 });
+
+export const TOGGLES = [
+  "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
+  "show_zoom_controls", "show_car", "show_logo", "show_distance", "show_updated",
+  "show_price_colors", "show_directions",
+];
 
 const EARTH_RADIUS_KM = 6371.0088;
 // Prix Carburant arrondit les coordonnées à 1e-3 ° (≈ 110 m)
@@ -42,8 +58,7 @@ export function normalizeConfig(raw) {
     distance: clampInt(raw.distance, 1, 50, DEFAULTS.distance),
     max_stations: clampInt(raw.max_stations, 1, 10, DEFAULTS.max_stations),
     sort: raw.sort === "distance" ? "distance" : "price",
-    show_list: raw.show_list !== false,
-    show_map: raw.show_map !== false,
+    ...Object.fromEntries(TOGGLES.map((k) => [k, raw[k] !== false])),
     map_height: clampInt(raw.map_height, 150, 1000, DEFAULTS.map_height),
     refresh_interval: clampInt(raw.refresh_interval, 5, 1440, DEFAULTS.refresh_interval),
     min_move: clampInt(raw.min_move, 50, 50000, DEFAULTS.min_move),
@@ -161,6 +176,77 @@ export function matchSensor(station, index, fuel) {
     sensorName: ref?.name ?? null,
     entityId: sameFuel?.entityId ?? any?.entityId ?? null,
   };
+}
+
+// Logos fournis par l'intégration Prix Carburant (mêmes fichiers que ses capteurs).
+// Logos shipped by the Prix Carburant integration (same files as its sensors).
+export const BRAND_LOGO_BASE_URL =
+  "https://raw.githubusercontent.com/Aohzan/hass-prixcarburant/refs/heads/master/brand_logos/";
+
+// [motif sur le nom normalisé, marque, fichier]. [pattern on normalized name, brand, file]
+const BRAND_RULES = [
+  [/\b(8 a huit|huit a 8)\b/, "8 à Huit", "8_A_Huit.svg"],
+  [/\bintermarche\b/, "Intermarché", "Intermarche.svg"],
+  [/\bcarrefour\b/, "Carrefour", "Carrefour.svg"],
+  [/\b(super u|hyper u|station u|systeme u|u express|marche u)\b/, "Système U", "Hyper-U.svg"],
+  [/\b(totalenergies|total access|total)\b/, "TotalEnergies", "TotalEnergies.svg"],
+  [/^relais\b/, "TotalEnergies", "TotalEnergies.svg"],
+  [/\b(e ?leclerc|leclerc)\b/, "E.Leclerc", "Leclerc.svg"],
+  [/\b(auchan|simply market)\b/, "Auchan", "Auchan.svg"],
+  [/\besso\b/, "Esso", "Esso.svg"],
+  [/\bavia\b/, "Avia", "AVIA.svg"],
+  [/\bshell\b/, "Shell", "Shell.svg"],
+  [/\bbp\b/, "BP", "BP.svg"],
+  [/\beni\b/, "Eni", "Eni.svg"],
+  [/\bagip\b/, "Agip", "Agip.svg"],
+  [/\belf\b/, "Elf", "ELF.svg"],
+  [/\belan\b/, "Elan", "ELAN-FR.svg"],
+  [/\bdyneff\b/, "Dyneff", "Dyneff.svg"],
+  [/\bfulli\b/, "Fulli", "Fulli.svg"],
+  [/\bcasino\b/, "Casino", "Casino.svg"],
+  [/\bcostco\b/, "Costco", "Costco.svg"],
+  [/\blidl\b/, "Lidl", "Lidl.svg"],
+  [/\baldi\b/, "Aldi", "Aldi_Nord.svg"],
+  [/\bnetto\b/, "Netto", "Netto-FR.svg"],
+  [/\bleader ?price\b/, "Leader Price", "Leader_Price.svg"],
+  [/\bbricomarche\b/, "Bricomarché", "Bricomarche.svg"],
+  [/\bmaximarche\b/, "Maximarché", "Maximarche.png"],
+  [/\bmonoprix\b/, "Monoprix", "Monoprix.svg"],
+  [/\bmatch\b/, "Match", "Match.svg"],
+  [/\bspar\b/, "Spar", "Spar.svg"],
+  [/\bg20\b/, "G20", "G20.svg"],
+  [/\batac\b/, "Atac", "Atac.svg"],
+  [/\bprox[iy]\b/, "Proxi", "Proxi.svg"],
+  [/\bgulf\b/, "Gulf", "Gulf.svg"],
+  [/\brenault\b/, "Renault", "Renault.svg"],
+  [/\brompetrol\b/, "Rompetrol", "Rompetrol.svg"],
+  [/\broady\b/, "Roady", "Roady-white.svg"],
+  [/\bmigro[sl]\b/, "Migrol", "Migrol.svg"],
+  [/\bvito\b/, "Vito", "Vito.svg"],
+  [/\bweldom\b/, "Weldom", "Weldom.svg"],
+];
+
+const normalize = (str) =>
+  String(str || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/**
+ * Devine l'enseigne d'après le nom de la station (ou une marque connue).
+ * Guesses the brand from the station name (or a known brand).
+ */
+export function brandFromName(...texts) {
+  for (const text of texts) {
+    const n = normalize(text);
+    if (!n) continue;
+    for (const [re, brand, file] of BRAND_RULES) {
+      if (re.test(n)) return { brand, logo: BRAND_LOGO_BASE_URL + file };
+    }
+  }
+  return null;
 }
 
 /** Jours calendaires écoulés (J+n). Calendar days elapsed (D+n). */

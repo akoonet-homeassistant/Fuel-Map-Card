@@ -38,12 +38,12 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.2`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration
 
-La carte se configure dans l'éditeur visuel (« Fuel Map Card » dans la liste des cartes) ou en YAML :
+Toutes les options se règlent dans l'éditeur visuel (« Fuel Map Card » dans la liste des cartes), regroupées en sections : Recherche, En-tête, Carte, Liste, Actualisation. En YAML :
 
 ```yaml
 type: custom:fuel-map-card
@@ -66,12 +66,23 @@ distance: 10
 | `min_move` | `500` | Nouvelle recherche après un déplacement de X mètres. |
 | `min_delay` | `2` | Délai minimum entre deux recherches, en minutes. |
 | `title` | « Stations à proximité » | Titre de la carte. |
+| `show_header` | `true` | Afficher le titre et le sous-titre. |
+| `show_refresh_button` | `true` | Afficher le bouton Actualiser (⟳). |
+| `show_car` | `true` | Afficher le véhicule sur la carte. |
+| `show_zoom_controls` | `true` | Afficher les boutons de zoom. |
+| `show_recenter_button` | `true` | Afficher le bouton Recentrer. |
+| `show_directions` | `true` | Lien Itinéraire dans la fiche d'une station. |
+| `show_logo` | `true` | Logo de l'enseigne dans la liste. |
+| `show_distance` | `true` | Colonne Distance. |
+| `show_updated` | `true` | Colonne MAJ (date de mise à jour). |
+| `show_price_colors` | `true` | Moins chère en vert, plus chère en rouge. |
 | `tile_url` | OpenStreetMap | Fond de carte personnalisé (URL `https://…/{z}/{x}/{y}.png`). |
 
 ## Bon à savoir
 
 - **10 stations au maximum** : l'action Prix Carburant renvoie les 10 stations les moins chères du rayon.
-- **Date de mise à jour** : l'action ne la fournit pas. La carte la reprend des capteurs Prix Carburant déjà configurés (même station, même carburant). Pour une station sans capteur, la colonne affiche « — ». Le logo de l'enseigne vient aussi de ces capteurs.
+- **Date de mise à jour** : l'action ne la fournit pas. La carte la reprend des capteurs Prix Carburant déjà configurés (même station, même carburant). Pour une station sans capteur, la colonne affiche « — ».
+- **Logos** : ce sont ceux de l'intégration Prix Carburant. La carte prend le logo du capteur de la station s'il existe, sinon elle reconnaît l'enseigne dans le nom (Intermarché, Carrefour, Super U, Esso, Total…, les « Relais » étant des TotalEnergies). Une station dont le nom ne contient pas l'enseigne et qui n'a pas de capteur garde l'icône générique.
 - **Distance** : calculée à vol d'oiseau depuis la position de l'entité, pas par la route.
 - La recherche n'a lieu que lorsque la carte est affichée à l'écran. Le bouton ⟳ force une nouvelle recherche.
 - Le fond de carte vient d'OpenStreetMap ; merci de respecter leur [politique d'utilisation](https://operations.osmfoundation.org/policies/tiles/).

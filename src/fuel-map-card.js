@@ -26,9 +26,10 @@ import {
   directionsUrl,
   safeImageUrl,
   cityOf,
+  brandFromName,
 } from "./utils.js";
 
-const VERSION = "2026.11.1";
+const VERSION = "2026.11.2";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const DEFAULT_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -159,6 +160,7 @@ class FuelMapCard extends HTMLElement {
     card.className = "card";
 
     const header = el("div", "header");
+    this._headerEl = header;
     const text = el("div", "text");
     this._titleEl = el("div", "title");
     this._subEl = el("div", "sub");
@@ -194,6 +196,12 @@ class FuelMapCard extends HTMLElement {
 
   _applyLayout() {
     const c = this._config;
+    this._headerEl.hidden = !c.show_header && !c.show_refresh_button;
+    this._headerEl.querySelector(".text").hidden = !c.show_header;
+    this._refreshBtn.hidden = !c.show_refresh_button;
+    this._recenterBtn.hidden = !c.show_recenter_button;
+    const cols = [c.show_logo ? "32px" : null, "minmax(0, 1fr)", c.show_distance ? "58px" : null, "64px", c.show_updated ? "34px" : null];
+    this._listEl.style.setProperty("--fmc-cols", cols.filter(Boolean).join(" "));
     this._mapWrap.hidden = !c.show_map;
     this._mapWrap.style.display = c.show_map ? "" : "none";
     this._mapEl.style.height = `${c.map_height}px`;
@@ -204,6 +212,12 @@ class FuelMapCard extends HTMLElement {
     this._recenterBtn.setAttribute("aria-label", t(this._hass, "recenter"));
     if (c.show_map && !this._map) this._initMap();
     if (this._map) {
+      if (c.show_zoom_controls && !this._map.zoomControl._map) this._map.zoomControl.addTo(this._map);
+      if (!c.show_zoom_controls && this._map.zoomControl._map) this._map.zoomControl.remove();
+      if (this._carMarker) {
+        if (c.show_car && !this._map.hasLayer(this._carMarker)) this._carMarker.addTo(this._map);
+        if (!c.show_car && this._map.hasLayer(this._carMarker)) this._carMarker.remove();
+      }
       const url = this._tileUrl();
       if (this._tileLayer && this._tileLayer._url !== url) {
         this._tileLayer.setUrl(url);
@@ -352,6 +366,15 @@ class FuelMapCard extends HTMLElement {
       if (s.distance == null || Math.abs(d - s.distance) > 0.1) changed = true;
       s.distance = d;
       const m = matchSensor(s, this._sensorIndex, c.fuel);
+      // Logo : celui du capteur, sinon l'enseigne déduite du nom.
+      // Logo: the sensor's, otherwise the brand guessed from the name.
+      if (!m.picture || !m.brand) {
+        const guess = brandFromName(m.brand, s.name, m.sensorName);
+        if (guess) {
+          m.brand ||= guess.brand;
+          m.picture ||= guess.logo;
+        }
+      }
       if (m.updated !== s.updated || m.picture !== s.picture) changed = true;
       Object.assign(s, m);
     }
@@ -431,10 +454,19 @@ class FuelMapCard extends HTMLElement {
       return;
     }
     const hass = this._hass;
-    const rank = priceRank(this._visible);
+    const c = this._config;
+    const rank = c.show_price_colors ? priceRank(this._visible) : new Map();
     const head = el("div", "head");
     head.setAttribute("aria-hidden", "true");
-    head.append(el("span"), el("span", "", t(hass, "station")), el("span", "", t(hass, "distance")), el("span", "", t(hass, "price")), el("span", "", t(hass, "updated")));
+    head.append(
+      ...[
+        c.show_logo ? el("span") : null,
+        el("span", "", t(hass, "station")),
+        c.show_distance ? el("span", "", t(hass, "distance")) : null,
+        el("span", "", t(hass, "price")),
+        c.show_updated ? el("span", "", t(hass, "updated")) : null,
+      ].filter(Boolean),
+    );
     const rows = [head];
     for (const s of this._visible) {
       const row = el("div", `row ${rank.get(s.id) || ""}`.trim());
@@ -447,7 +479,15 @@ class FuelMapCard extends HTMLElement {
       const upd = el("div", "upd", days == null ? t(hass, "no_date") : t(hass, "days", { n: days }));
       if (days != null && days >= STALE_DAYS) upd.classList.add("stale");
       if (s.updated) upd.title = this._fmtDate(s.updated);
-      row.append(this._logo(s), who, el("div", "dist", this._fmtDistance(s.distance)), el("div", "price", this._fmtPrice(s.price, true)), upd);
+      row.append(
+        ...[
+          c.show_logo ? this._logo(s) : null,
+          who,
+          c.show_distance ? el("div", "dist", this._fmtDistance(s.distance)) : null,
+          el("div", "price", this._fmtPrice(s.price, true)),
+          c.show_updated ? upd : null,
+        ].filter(Boolean),
+      );
       row.addEventListener("click", () => this._select(s.id, { fly: true }));
       row.addEventListener("keydown", (ev) => {
         if (ev.key === "Enter" || ev.key === " ") {
@@ -462,7 +502,7 @@ class FuelMapCard extends HTMLElement {
 
   _renderMarkers() {
     if (!this._map) return;
-    const rank = priceRank(this._visible);
+    const rank = this._config.show_price_colors ? priceRank(this._visible) : new Map();
     const keep = new Set(this._visible.map((s) => s.id));
     for (const [id, m] of this._markers) {
       if (!keep.has(id)) {
@@ -493,10 +533,10 @@ class FuelMapCard extends HTMLElement {
     const box = el("div", "popup");
     box.append(el("div", "name", this._displayName(s)), el("div", "addr", s.address));
     const days = daysSince(s.updated);
-    const parts = [this._fmtPrice(s.price, true), this._fmtDistance(s.distance)];
-    if (days != null) parts.push(`${t(hass, "updated")} ${t(hass, "days", { n: days })}`);
+    const parts = [this._fmtPrice(s.price, true), this._config.show_distance ? this._fmtDistance(s.distance) : null];
+    if (days != null && this._config.show_updated) parts.push(`${t(hass, "updated")} ${t(hass, "days", { n: days })}`);
     box.append(el("div", "line", parts.filter(Boolean).join(" · ")));
-    const url = directionsUrl(s.lat, s.lon);
+    const url = this._config.show_directions ? directionsUrl(s.lat, s.lon) : null;
     if (url) {
       const a = el("a", "", t(hass, "directions"));
       a.href = url;
@@ -525,7 +565,8 @@ class FuelMapCard extends HTMLElement {
       const iconObj = L.divIcon({ className: "fmc-icon", html: car, iconSize: [0, 0] });
       if (this._carMarker) this._carMarker.setIcon(iconObj);
       else {
-        this._carMarker = L.marker([pos.lat, pos.lon], { icon: iconObj, zIndexOffset: 100000, keyboard: false, interactive: false }).addTo(this._map);
+        this._carMarker = L.marker([pos.lat, pos.lon], { icon: iconObj, zIndexOffset: 100000, keyboard: false, interactive: false });
+        if (this._config.show_car) this._carMarker.addTo(this._map);
       }
       this._carPictureKey = key;
     }
@@ -540,7 +581,7 @@ class FuelMapCard extends HTMLElement {
   _fitAll(animate) {
     if (!this._map) return;
     const pts = this._visible.map((s) => [s.lat, s.lon]);
-    if (this._carMarker) pts.push(this._carMarker.getLatLng());
+    if (this._carMarker && this._config.show_car) pts.push(this._carMarker.getLatLng());
     if (!pts.length) return;
     if (!animate && this._fitted) return;
     this._map.closePopup();

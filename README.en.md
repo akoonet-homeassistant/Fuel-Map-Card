@@ -38,12 +38,12 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 ### Manual installation
 
 1. Copy `dist/fuel-map-card.js` to `/config/www/fuel-map-card/`.
-2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **JavaScript module**.
+2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.2`, type **JavaScript module**.
 3. Reload the browser page.
 
 ## Configuration
 
-Configure the card in the visual editor ("Fuel Map Card" in the card picker) or in YAML:
+Every option can be set in the visual editor ("Fuel Map Card" in the card picker), grouped in sections: Search, Header, Map, List, Refresh. In YAML:
 
 ```yaml
 type: custom:fuel-map-card
@@ -66,12 +66,23 @@ distance: 10
 | `min_move` | `500` | New search after moving X meters. |
 | `min_delay` | `2` | Minimum delay between two searches, in minutes. |
 | `title` | "Nearby stations" | Card title. |
+| `show_header` | `true` | Show the title and subtitle. |
+| `show_refresh_button` | `true` | Show the Refresh button (⟳). |
+| `show_car` | `true` | Show the vehicle on the map. |
+| `show_zoom_controls` | `true` | Show the zoom buttons. |
+| `show_recenter_button` | `true` | Show the Recenter button. |
+| `show_directions` | `true` | Directions link in a station's details. |
+| `show_logo` | `true` | Brand logo in the list. |
+| `show_distance` | `true` | Distance column. |
+| `show_updated` | `true` | Update column. |
+| `show_price_colors` | `true` | Cheapest in green, priciest in red. |
 | `tile_url` | OpenStreetMap | Custom map tiles (`https://…/{z}/{x}/{y}.png` URL). |
 
 ## Good to know
 
 - **10 stations at most**: the Prix Carburant action returns the 10 cheapest stations within the radius.
-- **Last update date**: the action does not provide it. The card reads it from the Prix Carburant sensors you already have (same station, same fuel). Stations without a sensor show "—". The brand logo also comes from those sensors.
+- **Last update date**: the action does not provide it. The card reads it from the Prix Carburant sensors you already have (same station, same fuel). Stations without a sensor show "—".
+- **Logos**: they are the Prix Carburant integration's logos. The card uses the station sensor's logo when there is one, otherwise it recognizes the brand in the name (Intermarché, Carrefour, Super U, Esso, Total…, "Relais" stations being TotalEnergies). A station whose name has no brand and that has no sensor keeps the generic icon.
 - **Distance**: straight-line distance from the entity's position, not by road.
 - Searches only run while the card is on screen. The ⟳ button forces a new search.
 - Map tiles come from OpenStreetMap; please follow their [usage policy](https://operations.osmfoundation.org/policies/tiles/).
