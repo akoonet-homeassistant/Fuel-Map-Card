@@ -1,10 +1,17 @@
+import { MAP_STYLE_IDS } from "./tiles.js";
+
 // Fonctions pures, sans DOM : testées par tests/utils.test.js
 // Pure helpers, no DOM: covered by tests/utils.test.js
 
 export const FUELS = ["E10", "SP95", "SP98", "Gazole", "E85", "GPLc"];
 
+export const LAYOUTS = ["map_first", "list_first"];
+
 export const DEFAULTS = Object.freeze({
-  fuel: "E10",
+  fuels: ["E10"],
+  layout: "map_first",
+  map_style: "osm",
+  dark_filter: true,
   distance: 10,
   max_stations: 10,
   sort: "price",
@@ -27,7 +34,7 @@ export const DEFAULTS = Object.freeze({
 });
 
 export const TOGGLES = [
-  "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
+  "dark_filter", "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
   "show_zoom_controls", "show_car", "show_logo", "show_distance", "show_updated",
   "show_price_colors", "show_directions",
 ];
@@ -49,12 +56,25 @@ export function normalizeConfig(raw) {
   if (typeof raw.entity !== "string" || !/^[a-z_]+\.[a-z0-9_]+$/.test(raw.entity)) {
     throw new Error("entity is required (e.g. device_tracker.my_car)");
   }
-  const fuel = FUELS.find((f) => f.toLowerCase() === String(raw.fuel ?? DEFAULTS.fuel).toLowerCase());
-  if (!fuel) throw new Error(`fuel must be one of: ${FUELS.join(", ")}`);
+  // fuels (liste) ou fuel (ancienne option, un seul carburant). fuels (list) or legacy fuel.
+  let wanted = raw.fuels ?? raw.fuel ?? DEFAULTS.fuels;
+  if (typeof wanted === "string") wanted = wanted.split(",");
+  if (!Array.isArray(wanted)) wanted = [wanted];
+  const fuels = [];
+  for (const w of wanted) {
+    const f = FUELS.find((x) => x.toLowerCase() === String(w).trim().toLowerCase());
+    if (!f) throw new Error(`fuel must be one of: ${FUELS.join(", ")}`);
+    if (!fuels.includes(f)) fuels.push(f);
+  }
+  if (!fuels.length) fuels.push(DEFAULTS.fuels[0]);
+  const { fuel: _legacy, ...rest } = raw;
   return {
-    ...raw,
+    ...rest,
     entity: raw.entity,
-    fuel,
+    fuels,
+    layout: LAYOUTS.includes(raw.layout) ? raw.layout : DEFAULTS.layout,
+    map_style: MAP_STYLE_IDS.includes(raw.map_style) ? raw.map_style : DEFAULTS.map_style,
+    tile_url: typeof raw.tile_url === "string" ? raw.tile_url.trim() : undefined,
     distance: clampInt(raw.distance, 1, 50, DEFAULTS.distance),
     max_stations: clampInt(raw.max_stations, 1, 10, DEFAULTS.max_stations),
     sort: raw.sort === "distance" ? "distance" : "price",

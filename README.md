@@ -17,15 +17,18 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 ## Fonctionnalités
 
 - Recherche automatique des stations dans un **rayon réglable** autour de l'entité suivie (`device_tracker`, `person`).
+- **Plusieurs carburants** au choix (E10, SP95, SP98, Gazole, E85, GPLc), avec des onglets pour passer de l'un à l'autre.
+- **Ordre d'affichage** au choix : carte puis liste, ou liste puis carte.
+- **Fond de carte** au choix : OpenStreetMap, OSM France, CARTO (clair, sombre, Voyager ou automatique selon le thème), relief, satellite ou URL personnalisée.
 - **Carte** avec une pastille de prix par station : la moins chère en vert, la plus chère en rouge. Le véhicule reste toujours au premier plan.
 - **Liste** triée par prix ou par distance : logo, nom, ville, distance, prix et date de mise à jour (J+n).
 - **Clic sur une station** dans la liste : la carte se centre dessus et ouvre sa fiche (adresse, prix, lien d'itinéraire).
 - Nouvelle recherche quand le véhicule s'est déplacé, avec un délai minimum pour ne pas solliciter l'API inutilement.
 - Éditeur visuel, thème clair et sombre, interface en **français et en anglais**.
 
-| Station sélectionnée | Thème sombre |
-|---|---|
-| ![Focus](docs/screenshots/card-focus-fr.png) | ![Sombre](docs/screenshots/card-dark-fr.png) |
+| Station sélectionnée | Liste en premier | Thème sombre |
+|---|---|---|
+| ![Focus](docs/screenshots/card-focus-fr.png) | ![Liste en premier](docs/screenshots/card-list-first-fr.png) | ![Sombre](docs/screenshots/card-dark-fr.png) |
 
 ## Prérequis
 
@@ -44,7 +47,7 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.2`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration
@@ -54,17 +57,23 @@ Toutes les options se règlent dans l'éditeur visuel (« Fuel Map Card » dans 
 ```yaml
 type: custom:fuel-map-card
 entity: device_tracker.ma_voiture
-fuel: E10
+fuels:
+  - E10
+  - SP98
+  - Gazole
 distance: 10
+layout: map_first
+map_style: osm
 ```
 
 | Option | Défaut | Description |
 |---|---|---|
 | `entity` | — | **Obligatoire.** Entité à suivre (`device_tracker`, `person`). |
-| `fuel` | `E10` | `E10`, `SP95`, `SP98`, `Gazole`, `E85` ou `GPLc`. |
+| `fuels` | `[E10]` | Un ou plusieurs carburants parmi `E10`, `SP95`, `SP98`, `Gazole`, `E85`, `GPLc`. Avec plusieurs carburants, des onglets apparaissent. L'ancienne option `fuel: E10` reste acceptée. |
 | `distance` | `10` | Rayon de recherche en km (1 à 50). |
 | `max_stations` | `10` | Nombre de stations affichées (1 à 10). |
 | `sort` | `price` | Tri de la liste : `price` (prix) ou `distance`. |
+| `layout` | `map_first` | Ordre d'affichage : `map_first` (carte puis liste) ou `list_first` (liste puis carte). |
 | `show_map` | `true` | Afficher la carte. |
 | `show_list` | `true` | Afficher la liste. |
 | `map_height` | `300` | Hauteur de la carte en pixels. |
@@ -82,7 +91,9 @@ distance: 10
 | `show_distance` | `true` | Colonne Distance. |
 | `show_updated` | `true` | Colonne MAJ (date de mise à jour). |
 | `show_price_colors` | `true` | Moins chère en vert, plus chère en rouge. |
-| `tile_url` | OpenStreetMap | Fond de carte personnalisé (URL `https://…/{z}/{x}/{y}.png`). |
+| `map_style` | `osm` | Fond de carte : `osm`, `osm_fr`, `auto` (CARTO clair ou sombre selon le thème), `carto_light`, `carto_dark`, `carto_voyager`, `topo`, `satellite` ou `custom`. |
+| `tile_url` | — | Avec `map_style: custom` : URL des tuiles `https://…/{z}/{x}/{y}.png`. |
+| `dark_filter` | `true` | En thème sombre, assombrit les fonds de carte clairs. |
 
 ## Bon à savoir
 
@@ -91,7 +102,8 @@ distance: 10
 - **Logos** : ce sont ceux de l'intégration Prix Carburant. La carte prend le logo du capteur de la station s'il existe, sinon elle reconnaît l'enseigne dans le nom (Intermarché, Carrefour, Super U, Esso, Total…, les « Relais » étant des TotalEnergies). Une station dont le nom ne contient pas l'enseigne et qui n'a pas de capteur garde l'icône générique.
 - **Distance** : calculée à vol d'oiseau depuis la position de l'entité, pas par la route.
 - La recherche n'a lieu que lorsque la carte est affichée à l'écran. Le bouton ⟳ force une nouvelle recherche.
-- Le fond de carte vient d'OpenStreetMap ; merci de respecter leur [politique d'utilisation](https://operations.osmfoundation.org/policies/tiles/).
+- **Plusieurs carburants** : une recherche par carburant est lancée à chaque actualisation (6 au maximum).
+- **Fonds de carte** : services publics gratuits (OpenStreetMap, OSM France, CARTO, OpenTopoMap, Esri). Merci de respecter leurs conditions d'utilisation, par exemple la [politique d'OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/).
 
 ## Développement
 

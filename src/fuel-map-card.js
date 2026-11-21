@@ -9,6 +9,7 @@
 import * as L from "leaflet/dist/leaflet-src.esm.js";
 import leafletCss from "leaflet/dist/leaflet.css";
 import { cardStyles } from "./styles.js";
+import { resolveTiles } from "./tiles.js";
 import { t, localeOf } from "./i18n.js";
 import "./editor.js";
 import {
@@ -29,12 +30,9 @@ import {
   brandFromName,
 } from "./utils.js";
 
-const VERSION = "2026.11.1";
+const VERSION = "2026.11.2";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
-const DEFAULT_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const OSM_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>';
 const SENSOR_INDEX_TTL = 5 * 60000;
 const TICK_MS = 60000;
 const STALE_DAYS = 3;
@@ -62,7 +60,10 @@ class FuelMapCard extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._config = null;
     this._hass = null;
-    this._stations = [];
+    this._data = new Map(); // carburant → stations. fuel → stations
+    this._fuelErrors = new Map();
+    this._active = null;
+    this._pos = null;
     this._visible = [];
     this._selected = null;
     this._lastFetch = null;
@@ -91,7 +92,7 @@ class FuelMapCard extends HTMLElement {
       Object.keys(states).find((id) => id.startsWith("device_tracker.") && positionOf(states[id])) ||
       Object.keys(states).find((id) => id.startsWith("person.") && positionOf(states[id])) ||
       "device_tracker.my_car";
-    return { entity: pick, fuel: DEFAULTS.fuel, distance: DEFAULTS.distance };
+    return { entity: pick, fuels: [...DEFAULTS.fuels], distance: DEFAULTS.distance };
   }
 
   setConfig(config) {
@@ -99,9 +100,14 @@ class FuelMapCard extends HTMLElement {
     const prev = this._config;
     this._config = next;
     const searchChanged =
-      !prev || prev.entity !== next.entity || prev.fuel !== next.fuel || prev.distance !== next.distance;
+      !prev ||
+      prev.entity !== next.entity ||
+      prev.fuels.join() !== next.fuels.join() ||
+      prev.distance !== next.distance;
+    if (!next.fuels.includes(this._active)) this._active = next.fuels[0];
     if (searchChanged) {
-      this._stations = [];
+      this._data.clear();
+      this._fuelErrors.clear();
       this._lastFetch = null;
       this._lastPos = null;
       this._selected = null;
@@ -127,6 +133,11 @@ class FuelMapCard extends HTMLElement {
 
   get hass() {
     return this._hass;
+  }
+
+  /** Stations du carburant affiché. Stations of the displayed fuel. */
+  get _stations() {
+    return this._data.get(this._active) || [];
   }
 
   getCardSize() {
@@ -179,12 +190,15 @@ class FuelMapCard extends HTMLElement {
     this._recenterBtn.addEventListener("click", () => this._fitAll(true));
     this._mapWrap.append(this._mapEl, this._recenterBtn);
 
+    this._tabsEl = el("div", "fuels");
+    this._tabsEl.setAttribute("role", "tablist");
+
     this._msgEl = el("div", "msg");
     this._msgEl.setAttribute("role", "status");
     this._listEl = el("div", "list");
     this._listEl.setAttribute("role", "list");
 
-    card.append(header, this._mapWrap, this._msgEl, this._listEl);
+    card.append(header, this._tabsEl, this._mapWrap, this._msgEl, this._listEl);
     root.replaceChildren(style, card);
     this._card = card;
     this._built = true;
@@ -196,6 +210,11 @@ class FuelMapCard extends HTMLElement {
 
   _applyLayout() {
     const c = this._config;
+    // Ordre : carte puis liste, ou l'inverse. Order: map then list, or the reverse.
+    if (c.layout === "list_first") this._card.append(this._msgEl, this._listEl, this._mapWrap);
+    else this._card.append(this._mapWrap, this._msgEl, this._listEl);
+    this._card.classList.toggle("list-first", c.layout === "list_first");
+    this._renderTabs();
     this._headerEl.hidden = !c.show_header && !c.show_refresh_button;
     this._headerEl.querySelector(".text").hidden = !c.show_header;
     this._refreshBtn.hidden = !c.show_refresh_button;
@@ -218,17 +237,94 @@ class FuelMapCard extends HTMLElement {
         if (c.show_car && !this._map.hasLayer(this._carMarker)) this._carMarker.addTo(this._map);
         if (!c.show_car && this._map.hasLayer(this._carMarker)) this._carMarker.remove();
       }
-      const url = this._tileUrl();
-      if (this._tileLayer && this._tileLayer._url !== url) {
-        this._tileLayer.setUrl(url);
-      }
+      this._applyTiles();
       requestAnimationFrame(() => this._map && this._map.invalidateSize());
     }
   }
 
-  _tileUrl() {
-    const u = this._config.tile_url;
-    return typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.test(u) && u.includes("{z}") ? u : DEFAULT_TILES;
+  /** Applique le fond de carte choisi (et le thème). Applies the chosen basemap. */
+  _applyTiles() {
+    if (!this._map) return;
+    const c = this._config;
+    const dark = Boolean(this._hass?.themes?.darkMode);
+    const tiles = resolveTiles(c.map_style, dark, c.tile_url);
+    const key = `${tiles.id}|${tiles.url}`;
+    if (this._tilesKey !== key) {
+      if (this._tileLayer) this._tileLayer.remove();
+      this._tileLayer = L.tileLayer(tiles.url, {
+        maxZoom: tiles.maxZoom,
+        subdomains: tiles.subdomains || "abc",
+        attribution: tiles.attribution,
+        crossOrigin: true,
+      }).addTo(this._map);
+      this._map.setMaxZoom(tiles.maxZoom);
+      this._tilesKey = key;
+    }
+    this._card.classList.toggle("invert-tiles", dark && tiles.invertDark && c.dark_filter);
+  }
+
+  _renderTabs() {
+    const c = this._config;
+    const fuels = c.fuels;
+    this._tabsEl.hidden = fuels.length < 2;
+    if (fuels.length < 2) {
+      this._tabsEl.replaceChildren();
+      return;
+    }
+    const tabs = fuels.map((f) => {
+      const b = el("button", "fuel-tab", f);
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.dataset.fuel = f;
+      b.addEventListener("click", () => this._setActiveFuel(f));
+      return b;
+    });
+    this._tabsEl.replaceChildren(...tabs);
+    this._tabsEl.onkeydown = (ev) => {
+      if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+      const i = fuels.indexOf(this._active);
+      const next = fuels[(i + (ev.key === "ArrowRight" ? 1 : fuels.length - 1)) % fuels.length];
+      this._setActiveFuel(next);
+      this._tabsEl.querySelector(`[data-fuel="${next}"]`)?.focus();
+    };
+    this._markActiveTab();
+  }
+
+  _markActiveTab() {
+    for (const b of this._tabsEl.querySelectorAll(".fuel-tab")) {
+      const on = b.dataset.fuel === this._active;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      b.tabIndex = on ? 0 : -1;
+    }
+  }
+
+  _setActiveFuel(fuel) {
+    if (fuel === this._active) return;
+    this._active = fuel;
+    this._selected = null;
+    this._map?.closePopup();
+    this._markActiveTab();
+    this._updateSubtitle();
+    this._showFuelStatus();
+    this._recomputeDistances(this._pos, true);
+  }
+
+  _updateSubtitle() {
+    const c = this._config;
+    const stateObj = this._hass?.states?.[c.entity];
+    const name = stateObj?.attributes?.friendly_name || c.entity;
+    this._subEl.textContent = t(this._hass, "within", { fuel: this._active, km: c.distance, name });
+  }
+
+  /** Message propre au carburant affiché. Message for the displayed fuel. */
+  _showFuelStatus() {
+    if (this._msgKind === "state") return;
+    const err = this._fuelErrors.get(this._active);
+    if (err) this._setMessage(t(this._hass, "err_fetch", { error: err }), "fetch");
+    else if (this._data.has(this._active) && !this._stations.length)
+      this._setMessage(t(this._hass, "no_station", { km: this._config.distance }), "info");
+    else if (this._data.has(this._active)) this._setMessage(null);
   }
 
   _initMap() {
@@ -239,11 +335,6 @@ class FuelMapCard extends HTMLElement {
       tap: false,
     }).setView([46.6, 2.4], 5);
     this._map.attributionControl.setPrefix(false);
-    this._tileLayer = L.tileLayer(this._tileUrl(), {
-      maxZoom: 19,
-      attribution: this._config.tile_url ? "" : OSM_ATTRIBUTION,
-      crossOrigin: true,
-    }).addTo(this._map);
     // Activer la molette seulement après un clic sur la carte. Wheel zoom only after a click.
     this._map.on("click", () => this._map.scrollWheelZoom.enable());
     this._map.on("mouseout", () => this._map.scrollWheelZoom.disable());
@@ -271,6 +362,7 @@ class FuelMapCard extends HTMLElement {
     this._lastThemes = hass.themes;
 
     this._card.classList.toggle("dark", Boolean(hass.themes?.darkMode));
+    this._applyTiles();
     this._titleEl.textContent = c.title || t(hass, "title");
 
     if (!hass.services?.[DOMAIN]?.[SERVICE]) {
@@ -284,13 +376,14 @@ class FuelMapCard extends HTMLElement {
     }
     const pos = positionOf(stateObj);
     const name = stateObj.attributes?.friendly_name || c.entity;
-    this._subEl.textContent = t(hass, "within", { fuel: c.fuel, km: c.distance, name });
+    this._updateSubtitle();
     if (!pos) {
       this._setMessage(t(hass, "err_position", { entity: name }), "state");
       return;
     }
     if (this._msgKind === "state") this._setMessage(null);
 
+    this._pos = pos;
     this._updateCar(pos, stateObj);
     this._refreshSensorIndex(false);
 
@@ -313,6 +406,7 @@ class FuelMapCard extends HTMLElement {
     }
   }
 
+  /** Une recherche par carburant, en parallèle. One search per fuel, in parallel. */
   async _fetch(pos) {
     const hass = this._hass;
     const c = this._config;
@@ -321,26 +415,34 @@ class FuelMapCard extends HTMLElement {
     this._lastFetch = Date.now();
     this._lastPos = pos;
     this._refreshBtn.classList.add("spin");
-    if (!this._stations.length) this._setMessage(t(hass, "loading"), "info");
+    if (!this._data.size) this._setMessage(t(hass, "loading"), "info");
     try {
-      const res = await hass.callWS({
-        type: "call_service",
-        domain: DOMAIN,
-        service: SERVICE,
-        service_data: { entity_id: c.entity, fuel: c.fuel, distance: c.distance },
-        return_response: true,
-      });
+      const results = await Promise.allSettled(
+        c.fuels.map((fuel) =>
+          hass.callWS({
+            type: "call_service",
+            domain: DOMAIN,
+            service: SERVICE,
+            service_data: { entity_id: c.entity, fuel, distance: c.distance },
+            return_response: true,
+          }),
+        ),
+      );
       if (id !== this._requestId) return;
-      this._stations = parseStations(res?.response);
+      c.fuels.forEach((fuel, i) => {
+        const r = results[i];
+        if (r.status === "fulfilled") {
+          this._data.set(fuel, parseStations(r.value?.response));
+          this._fuelErrors.delete(fuel);
+        } else {
+          const err = r.reason;
+          this._fuelErrors.set(fuel, String(err?.message || err?.code || err || "?").slice(0, 200));
+        }
+      });
       this._refreshSensorIndex(true);
       this._recomputeDistances(pos, true);
-      if (!this._stations.length) this._setMessage(t(hass, "no_station", { km: c.distance }), "info");
-      else this._setMessage(null);
+      this._showFuelStatus();
       this._fitAll(false);
-    } catch (err) {
-      if (id !== this._requestId) return;
-      const msg = String(err?.message || err?.code || err || "?").slice(0, 200);
-      this._setMessage(t(hass, "err_fetch", { error: msg }), "fetch");
     } finally {
       if (id === this._requestId) {
         this._inFlight = false;
@@ -365,7 +467,7 @@ class FuelMapCard extends HTMLElement {
       const d = haversineKm(pos.lat, pos.lon, s.lat, s.lon);
       if (s.distance == null || Math.abs(d - s.distance) > 0.1) changed = true;
       s.distance = d;
-      const m = matchSensor(s, this._sensorIndex, c.fuel);
+      const m = matchSensor(s, this._sensorIndex, this._active);
       // Logo : celui du capteur, sinon l'enseigne déduite du nom.
       // Logo: the sensor's, otherwise the brand guessed from the name.
       if (!m.picture || !m.brand) {

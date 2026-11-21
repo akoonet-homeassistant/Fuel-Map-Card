@@ -57,9 +57,13 @@ class FuelMapCardEditor extends HTMLElement {
       this._form.addEventListener("value-changed", (ev) => {
         ev.stopPropagation();
         const value = { ...ev.detail.value };
+        delete value.fuel;
+        if (Array.isArray(value.fuels) && !value.fuels.length) delete value.fuels;
         for (const k of Object.keys(value)) {
           // On n'écrit que ce qui diffère des valeurs par défaut. Only keep non-default values.
-          if (value[k] === "" || value[k] == null || (k in DEFAULTS && value[k] === DEFAULTS[k])) delete value[k];
+          const def = DEFAULTS[k];
+          const same = Array.isArray(def) ? JSON.stringify(def) === JSON.stringify(value[k]) : value[k] === def;
+          if (value[k] === "" || value[k] == null || (k in DEFAULTS && same)) delete value[k];
         }
         const { type = "custom:fuel-map-card", entity, ...rest } = value;
         const config = { type, entity, ...rest };
@@ -69,8 +73,12 @@ class FuelMapCardEditor extends HTMLElement {
       this.replaceChildren(this._form);
     }
     this._form.hass = this._hass;
-    this._form.schema = editorSchema(this._hass);
-    this._form.data = { ...DEFAULTS, ...this._config };
+    this._form.schema = editorSchema(this._hass, { ...DEFAULTS, ...this._config });
+    const data = { ...DEFAULTS, ...this._config };
+    // Ancienne option « fuel » → liste « fuels ». Legacy "fuel" → "fuels" list.
+    if (!this._config.fuels && this._config.fuel) data.fuels = [this._config.fuel];
+    delete data.fuel;
+    this._form.data = data;
   }
 }
 

@@ -1,6 +1,7 @@
 // Schéma de l'éditeur visuel. Visual editor schema.
 import { t } from "./i18n.js";
-import { FUELS } from "./utils.js";
+import { FUELS, LAYOUTS } from "./utils.js";
+import { MAP_STYLE_IDS } from "./tiles.js";
 
 const bool = (name) => ({ name, selector: { boolean: {} } });
 const num = (name, min, max, step, unit) => ({
@@ -18,7 +19,14 @@ const section = (hass, key, icon, schema, expanded = false) => ({
   schema,
 });
 
-export const editorSchema = (hass) => [
+const select = (hass, name, values, prefix) => ({
+  name,
+  selector: {
+    select: { mode: "dropdown", options: values.map((v) => ({ value: v, label: t(hass, `editor.${prefix}_${v}`) })) },
+  },
+});
+
+export const editorSchema = (hass, data = {}) => [
   { name: "entity", required: true, selector: { entity: { domain: ["device_tracker", "person"] } } },
   section(
     hass,
@@ -26,10 +34,13 @@ export const editorSchema = (hass) => [
     "mdi:magnify",
     [
       {
+        name: "fuels",
+        selector: { select: { multiple: true, mode: "list", options: FUELS.map((f) => ({ value: f, label: f })) } },
+      },
+      {
         type: "grid",
         name: "",
         schema: [
-          { name: "fuel", selector: { select: { mode: "dropdown", options: FUELS.map((f) => ({ value: f, label: f })) } } },
           num("distance", 1, 50, 1, "km"),
           num("max_stations", 1, 10, 1),
           {
@@ -51,10 +62,14 @@ export const editorSchema = (hass) => [
   ),
   section(hass, "general", "mdi:card-outline", [
     { name: "title", selector: { text: {} } },
+    select(hass, "layout", LAYOUTS, "layout"),
     { type: "grid", name: "", schema: [bool("show_header"), bool("show_refresh_button")] },
   ]),
   section(hass, "map", "mdi:map", [
     { type: "grid", name: "", schema: [bool("show_map"), num("map_height", 150, 1000, 10, "px")] },
+    select(hass, "map_style", MAP_STYLE_IDS, "style"),
+    ...(data.map_style === "custom" ? [{ name: "tile_url", selector: { text: { type: "url" } } }] : []),
+    bool("dark_filter"),
     {
       type: "grid",
       name: "",

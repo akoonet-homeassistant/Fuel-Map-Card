@@ -34,6 +34,23 @@ button.icon-btn.spin ha-icon, button.icon-btn.spin .glyph { animation: fmc-spin 
 .glyph { font-size: 18px; line-height: 1; }
 
 .map-wrap { position: relative; }
+.list-first .map-wrap { margin-top: 4px; }
+.fuels {
+  display: flex; gap: 6px; padding: 0 16px 10px; overflow-x: auto; scrollbar-width: none;
+}
+.fuels::-webkit-scrollbar { display: none; }
+button.fuel-tab {
+  all: unset; box-sizing: border-box; cursor: pointer; flex: none;
+  padding: 4px 14px; border-radius: 16px; font-size: 13px; font-weight: 500; line-height: 20px;
+  color: var(--primary-text-color);
+  border: 1px solid var(--divider-color, rgba(127,127,127,.3));
+}
+button.fuel-tab:hover { background: var(--secondary-background-color, rgba(127,127,127,.1)); }
+button.fuel-tab:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }
+button.fuel-tab.active {
+  background: var(--primary-color, #03a9f4); border-color: var(--primary-color, #03a9f4);
+  color: var(--text-primary-color, #fff);
+}
 .map { width: 100%; background: var(--secondary-background-color, #eee); z-index: 0; }
 .map-wrap .recenter {
   position: absolute; right: 10px; bottom: 22px; z-index: 500;
@@ -41,7 +58,7 @@ button.icon-btn.spin ha-icon, button.icon-btn.spin .glyph { animation: fmc-spin 
   box-shadow: 0 1px 4px rgba(0,0,0,.3);
   color: var(--primary-text-color);
 }
-.dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9); }
+.invert-tiles .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9); }
 .leaflet-container { font: inherit; background: var(--secondary-background-color, #ddd); }
 .leaflet-control-attribution { font-size: 10px; }
 .dark .leaflet-control-attribution { background: rgba(0,0,0,.6); color: #ccc; }

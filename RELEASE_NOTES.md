@@ -1,31 +1,17 @@
-# Fuel Map Card 2026.11.1
+# Fuel Map Card 2026.11.2
 
-## 🇫🇷 Première version
+## 🇫🇷 Nouveautés
 
-Carte Lovelace qui affiche les stations-service autour d'un véhicule, à partir de l'intégration Prix Carburant.
+- **Plusieurs carburants** : choisissez un ou plusieurs carburants (E10, SP95, SP98, Gazole, E85, GPLc). Des onglets permettent de passer de l'un à l'autre ; la carte, la liste, les couleurs de prix et la date de mise à jour suivent le carburant affiché. L'ancienne option `fuel` reste acceptée.
+- **Ordre d'affichage** : carte puis liste, ou liste puis carte (option `layout`).
+- **Choix du fond de carte** (option `map_style`) : OpenStreetMap, OpenStreetMap France, CARTO clair, sombre ou Voyager, automatique (clair ou sombre selon le thème), relief (OpenTopoMap), satellite (Esri) ou URL personnalisée.
+- Nouvelle option `dark_filter` : assombrir ou non les fonds de carte clairs en thème sombre.
+- Si la recherche échoue pour un carburant, les autres restent affichés et l'erreur n'apparaît que sur l'onglet concerné.
 
-- Recherche automatique dans un rayon réglable autour d'un `device_tracker` ou d'une `person` (action `prix_carburant.find_nearest_stations`).
-- Carte avec une pastille de prix par station (moins chère en vert, plus chère en rouge) ; le véhicule reste au premier plan.
-- Liste triée par prix ou distance : logo de l'enseigne, nom, ville, distance, prix, date de mise à jour (J+n).
-- Logos des enseignes : logo du capteur Prix Carburant s'il existe, sinon enseigne reconnue dans le nom de la station.
-- Clic sur une station : la carte se centre dessus et ouvre sa fiche avec un lien d'itinéraire.
-- Nouvelle recherche après un déplacement, avec un délai minimum entre deux appels à l'API.
-- Éditeur visuel en sections (Recherche, En-tête, Carte, Liste, Actualisation) : chaque élément s'active ou se désactive (titre, boutons, véhicule, zoom, itinéraire, logo, colonnes Distance et MAJ, couleurs de prix).
-- Thème clair/sombre, français et anglais.
+## 🇬🇧 What's new
 
-**Limites connues** : 10 stations au maximum (limite de l'action Prix Carburant) ; la date de mise à jour n'est affichée que pour les stations qui ont déjà un capteur Prix Carburant ; une station sans capteur et dont le nom ne contient pas l'enseigne garde l'icône générique.
-
-## 🇬🇧 First release
-
-Lovelace card showing fuel stations around a vehicle, using the Prix Carburant integration.
-
-- Automatic search within an adjustable radius around a `device_tracker` or `person` (`prix_carburant.find_nearest_stations` action).
-- Map with a price pin per station (cheapest in green, priciest in red); the vehicle stays on top.
-- List sorted by price or distance: brand logo, name, city, distance, price, last update (D+n).
-- Brand logos: the Prix Carburant sensor's logo when available, otherwise the brand recognized in the station name.
-- Click a station: the map centers on it and opens its details with a directions link.
-- New search after moving, with a minimum delay between API calls.
-- Visual editor in sections (Search, Header, Map, List, Refresh): every element can be turned on or off (title, buttons, vehicle, zoom, directions, logo, Distance and Update columns, price colors).
-- Light/dark theme, French and English.
-
-**Known limits**: 10 stations at most (Prix Carburant action limit); the update date is only shown for stations that already have a Prix Carburant sensor; a station without a sensor whose name has no brand keeps the generic icon.
+- **Several fuels**: pick one or more fuels (E10, SP95, SP98, Gazole, E85, GPLc). Tabs let you switch between them; the map, list, price colors and update date follow the displayed fuel. The legacy `fuel` option is still accepted.
+- **Display order**: map then list, or list then map (`layout` option).
+- **Basemap choice** (`map_style` option): OpenStreetMap, OpenStreetMap France, CARTO light, dark or Voyager, automatic (light or dark with the theme), terrain (OpenTopoMap), satellite (Esri) or a custom URL.
+- New `dark_filter` option: whether to darken light basemaps in dark theme.
+- If the search fails for one fuel, the others stay visible and the error only shows on that fuel's tab.

@@ -17,15 +17,18 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 ## Features
 
 - Automatic search for stations within an **adjustable radius** around the tracked entity (`device_tracker`, `person`).
+- **Several fuels** to choose from (E10, SP95, SP98, Gazole, E85, GPLc), with tabs to switch between them.
+- **Display order** of your choice: map then list, or list then map.
+- **Basemap** of your choice: OpenStreetMap, OSM France, CARTO (light, dark, Voyager or automatic with the theme), terrain, satellite or a custom URL.
 - **Map** with a price pin per station: cheapest in green, priciest in red. The vehicle always stays on top.
 - **List** sorted by price or distance: logo, name, city, distance, price and last update (D+n).
 - **Click a station** in the list: the map centers on it and opens its details (address, price, directions link).
 - New search once the vehicle has moved, with a minimum delay so the API is not called needlessly.
 - Visual editor, light and dark themes, **French and English** interface.
 
-| Selected station | Dark theme |
-|---|---|
-| ![Focus](docs/screenshots/card-focus-fr.png) | ![Dark](docs/screenshots/card-dark-fr.png) |
+| Selected station | List first | Dark theme |
+|---|---|---|
+| ![Focus](docs/screenshots/card-focus-fr.png) | ![List first](docs/screenshots/card-list-first-fr.png) | ![Dark](docs/screenshots/card-dark-fr.png) |
 
 ## Requirements
 
@@ -44,7 +47,7 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 ### Manual installation
 
 1. Copy `dist/fuel-map-card.js` to `/config/www/fuel-map-card/`.
-2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **JavaScript module**.
+2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.2`, type **JavaScript module**.
 3. Reload the browser page.
 
 ## Configuration
@@ -54,17 +57,23 @@ Every option can be set in the visual editor ("Fuel Map Card" in the card picker
 ```yaml
 type: custom:fuel-map-card
 entity: device_tracker.my_car
-fuel: E10
+fuels:
+  - E10
+  - SP98
+  - Gazole
 distance: 10
+layout: map_first
+map_style: osm
 ```
 
 | Option | Default | Description |
 |---|---|---|
 | `entity` | — | **Required.** Entity to follow (`device_tracker`, `person`). |
-| `fuel` | `E10` | `E10`, `SP95`, `SP98`, `Gazole`, `E85` or `GPLc`. |
+| `fuels` | `[E10]` | One or more fuels among `E10`, `SP95`, `SP98`, `Gazole`, `E85`, `GPLc`. With several fuels, tabs are shown. The legacy `fuel: E10` option is still accepted. |
 | `distance` | `10` | Search radius in km (1 to 50). |
 | `max_stations` | `10` | Number of stations shown (1 to 10). |
 | `sort` | `price` | List order: `price` or `distance`. |
+| `layout` | `map_first` | Display order: `map_first` (map then list) or `list_first` (list then map). |
 | `show_map` | `true` | Show the map. |
 | `show_list` | `true` | Show the list. |
 | `map_height` | `300` | Map height in pixels. |
@@ -82,7 +91,9 @@ distance: 10
 | `show_distance` | `true` | Distance column. |
 | `show_updated` | `true` | Update column. |
 | `show_price_colors` | `true` | Cheapest in green, priciest in red. |
-| `tile_url` | OpenStreetMap | Custom map tiles (`https://…/{z}/{x}/{y}.png` URL). |
+| `map_style` | `osm` | Basemap: `osm`, `osm_fr`, `auto` (CARTO light or dark with the theme), `carto_light`, `carto_dark`, `carto_voyager`, `topo`, `satellite` or `custom`. |
+| `tile_url` | — | With `map_style: custom`: tile URL `https://…/{z}/{x}/{y}.png`. |
+| `dark_filter` | `true` | In dark theme, darkens light basemaps. |
 
 ## Good to know
 
@@ -91,7 +102,8 @@ distance: 10
 - **Logos**: they are the Prix Carburant integration's logos. The card uses the station sensor's logo when there is one, otherwise it recognizes the brand in the name (Intermarché, Carrefour, Super U, Esso, Total…, "Relais" stations being TotalEnergies). A station whose name has no brand and that has no sensor keeps the generic icon.
 - **Distance**: straight-line distance from the entity's position, not by road.
 - Searches only run while the card is on screen. The ⟳ button forces a new search.
-- Map tiles come from OpenStreetMap; please follow their [usage policy](https://operations.osmfoundation.org/policies/tiles/).
+- **Several fuels**: one search per fuel runs at each refresh (6 at most).
+- **Basemaps**: free public services (OpenStreetMap, OSM France, CARTO, OpenTopoMap, Esri). Please follow their terms of use, e.g. the [OpenStreetMap policy](https://operations.osmfoundation.org/policies/tiles/).
 
 ## Development
 
