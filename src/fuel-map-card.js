@@ -31,7 +31,7 @@ import {
   sensorStations,
 } from "./utils.js";
 
-const VERSION = "2026.11.5";
+const VERSION = "2026.11.6";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const SENSOR_INDEX_TTL = 5 * 60000;
@@ -106,6 +106,15 @@ class FuelMapCard extends HTMLElement {
       prev.fuels.join() !== next.fuels.join() ||
       prev.distance !== next.distance;
     if (!next.fuels.includes(this._active)) this._active = next.fuels[0];
+    // Tri par défaut modifié dans l'éditeur : il remplace le choix mémorisé.
+    // Default sort changed in the editor: it replaces the remembered choice.
+    if (prev && prev.sort !== next.sort) {
+      try {
+        window.localStorage.removeItem(`fuel-map-card:sort:${next.entity}`);
+      } catch {
+        /* ignoré. ignored */
+      }
+    }
     if (searchChanged) {
       this._data.clear();
       this._fuelErrors.clear();
@@ -197,13 +206,25 @@ class FuelMapCard extends HTMLElement {
 
     this._tabsEl = el("div", "fuels");
     this._tabsEl.setAttribute("role", "tablist");
+    // Choix du tri, sur la carte elle-même. Sort choice, on the card itself.
+    this._sortEl = el("div", "sort");
+    this._sortEl.setAttribute("role", "group");
+    for (const v of ["price", "distance"]) {
+      const b = el("button", "sort-btn");
+      b.type = "button";
+      b.dataset.sort = v;
+      b.addEventListener("click", () => this._setSort(v));
+      this._sortEl.append(b);
+    }
+    this._toolbarEl = el("div", "toolbar");
+    this._toolbarEl.append(this._tabsEl, this._sortEl);
 
     this._msgEl = el("div", "msg");
     this._msgEl.setAttribute("role", "status");
     this._listEl = el("div", "list");
     this._listEl.setAttribute("role", "list");
 
-    card.append(header, this._tabsEl, this._mapWrap, this._msgEl, this._listEl);
+    card.append(header, this._toolbarEl, this._mapWrap, this._msgEl, this._listEl);
     root.replaceChildren(style, card);
     this._card = card;
     this._built = true;
@@ -220,11 +241,19 @@ class FuelMapCard extends HTMLElement {
     else this._card.append(this._mapWrap, this._msgEl, this._listEl);
     this._card.classList.toggle("list-first", c.layout === "list_first");
     this._renderTabs();
+    this._sort = this._loadSort() || c.sort;
+    this._sortEl.hidden = !c.show_sort_toggle;
+    this._sortEl.setAttribute("aria-label", t(this._hass, "sort_by"));
+    for (const b of this._sortEl.querySelectorAll(".sort-btn")) {
+      b.textContent = t(this._hass, b.dataset.sort === "price" ? "price" : "distance");
+    }
+    this._markSort();
+    this._toolbarEl.hidden = this._tabsEl.hidden && this._sortEl.hidden;
     this._headerEl.hidden = !c.show_header && !c.show_refresh_button;
     this._headerEl.querySelector(".text").hidden = !c.show_header;
     this._refreshBtn.hidden = !c.show_refresh_button;
     this._recenterBtn.hidden = !c.show_recenter_button;
-    const cols = [c.show_logo ? "32px" : null, "minmax(0, 1fr)", c.show_distance ? "58px" : null, "64px", c.show_updated ? "34px" : null];
+    const cols = [c.show_logo ? "32px" : null, "minmax(0, 1fr)", c.show_distance ? "76px" : null, "64px", c.show_updated ? "34px" : null];
     this._listEl.style.setProperty("--fmc-cols", cols.filter(Boolean).join(" "));
     this._mapWrap.hidden = !c.show_map;
     this._mapWrap.style.display = c.show_map ? "" : "none";
@@ -293,6 +322,40 @@ class FuelMapCard extends HTMLElement {
       this._tabsEl.querySelector(`[data-fuel="${next}"]`)?.focus();
     };
     this._markActiveTab();
+  }
+
+  _sortKey() {
+    return `fuel-map-card:sort:${this._config.entity}`;
+  }
+
+  /** Tri mémorisé sur cet appareil (facultatif). Sort remembered on this device. */
+  _loadSort() {
+    try {
+      const v = window.localStorage.getItem(this._sortKey());
+      return v === "price" || v === "distance" ? v : null;
+    } catch {
+      return null;
+    }
+  }
+
+  _setSort(v) {
+    if (v !== "price" && v !== "distance") return;
+    this._sort = v;
+    try {
+      window.localStorage.setItem(this._sortKey(), v);
+    } catch {
+      /* stockage indisponible : le choix reste en mémoire. Storage unavailable. */
+    }
+    this._markSort();
+    this._recomputeDistances(this._pos, true);
+  }
+
+  _markSort() {
+    for (const b of this._sortEl.querySelectorAll(".sort-btn")) {
+      const on = b.dataset.sort === this._sort;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    }
   }
 
   _markActiveTab() {
@@ -499,7 +562,7 @@ class FuelMapCard extends HTMLElement {
       Object.assign(s, m);
     }
     if (!changed) return;
-    this._visible = sortStations(all, c.sort, c.max_stations);
+    this._visible = sortStations(all, this._sort || c.sort, c.max_stations);
     this._renderAll();
   }
 
@@ -577,13 +640,20 @@ class FuelMapCard extends HTMLElement {
     const c = this._config;
     const rank = c.show_price_colors ? priceRank(this._visible) : new Map();
     const head = el("div", "head");
-    head.setAttribute("aria-hidden", "true");
+    const sortHead = (key, label) => {
+      const b = el("button", `sort-head${this._sort === key ? " active" : ""}`, label);
+      b.type = "button";
+      b.title = `${t(hass, "sort_by")} : ${label}`;
+      b.setAttribute("aria-pressed", this._sort === key ? "true" : "false");
+      b.addEventListener("click", () => this._setSort(key));
+      return b;
+    };
     head.append(
       ...[
         c.show_logo ? el("span") : null,
         el("span", "", t(hass, "station")),
-        c.show_distance ? el("span", "", t(hass, "distance")) : null,
-        el("span", "", t(hass, "price")),
+        c.show_distance ? sortHead("distance", t(hass, "distance")) : null,
+        sortHead("price", t(hass, "price")),
         c.show_updated ? el("span", "", t(hass, "updated")) : null,
       ].filter(Boolean),
     );

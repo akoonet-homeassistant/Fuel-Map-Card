@@ -21,7 +21,7 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 - **Ordre d'affichage** au choix : carte puis liste, ou liste puis carte.
 - **Fond de carte** au choix : OpenStreetMap, OSM France, CARTO (clair, sombre, Voyager ou automatique selon le thème), relief, satellite ou URL personnalisée.
 - **Carte** avec une pastille de prix par station : la moins chère en vert, la plus chère en rouge. Le véhicule reste toujours au premier plan.
-- **Liste** triée par prix ou par distance : logo, nom, ville, distance, prix et date de mise à jour (J+n).
+- **Liste** triée par prix ou par distance, au choix **directement sur la carte** (sélecteur Prix | Distance ou clic sur l'en-tête de colonne) : logo, nom, ville, distance, prix et date de mise à jour (J+n).
 - **Clic sur une station** dans la liste : la carte se centre dessus et ouvre sa fiche (adresse, prix, lien d'itinéraire).
 - Nouvelle recherche quand le véhicule s'est déplacé, avec un délai minimum pour ne pas solliciter l'API inutilement.
 - Éditeur visuel, thème clair et sombre, interface en **français et en anglais**.
@@ -51,7 +51,7 @@ Ou en dépôt personnalisé :
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.5`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.6`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration
@@ -77,7 +77,8 @@ map_style: osm
 | `distance` | `10` | Rayon de recherche en km (1 à 50). |
 | `max_stations` | `10` | Nombre de stations affichées (1 à 50). |
 | `include_sensors` | `true` | Ajoute toutes les stations de vos capteurs Prix Carburant situées dans le rayon, quel que soit leur prix. |
-| `sort` | `price` | Tri de la liste : `price` (prix) ou `distance`. |
+| `sort` | `price` | Tri par défaut : `price` (prix) ou `distance`. Le tri choisi sur la carte est mémorisé sur l'appareil. |
+| `show_sort_toggle` | `true` | Afficher le sélecteur Prix / Distance sur la carte. |
 | `layout` | `map_first` | Ordre d'affichage : `map_first` (carte puis liste) ou `list_first` (liste puis carte). |
 | `show_map` | `true` | Afficher la carte. |
 | `show_list` | `true` | Afficher la liste. |

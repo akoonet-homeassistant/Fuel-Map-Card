@@ -57,7 +57,7 @@ export const editorSchema = (hass, data = {}) => [
           },
         ],
       },
-      bool("include_sensors"),
+      { type: "grid", name: "", schema: [bool("include_sensors"), bool("show_sort_toggle")] },
     ],
     true,
   ),

@@ -21,7 +21,7 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 - **Display order** of your choice: map then list, or list then map.
 - **Basemap** of your choice: OpenStreetMap, OSM France, CARTO (light, dark, Voyager or automatic with the theme), terrain, satellite or a custom URL.
 - **Map** with a price pin per station: cheapest in green, priciest in red. The vehicle always stays on top.
-- **List** sorted by price or distance: logo, name, city, distance, price and last update (D+n).
+- **List** sorted by price or distance, chosen **right on the card** (Price | Distance switch or click on the column header): logo, name, city, distance, price and last update (D+n).
 - **Click a station** in the list: the map centers on it and opens its details (address, price, directions link).
 - New search once the vehicle has moved, with a minimum delay so the API is not called needlessly.
 - Visual editor, light and dark themes, **French and English** interface.
@@ -51,7 +51,7 @@ Or as a custom repository:
 ### Manual installation
 
 1. Copy `dist/fuel-map-card.js` to `/config/www/fuel-map-card/`.
-2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.5`, type **JavaScript module**.
+2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.6`, type **JavaScript module**.
 3. Reload the browser page.
 
 ## Configuration
@@ -77,7 +77,8 @@ map_style: osm
 | `distance` | `10` | Search radius in km (1 to 50). |
 | `max_stations` | `10` | Number of stations shown (1 to 50). |
 | `include_sensors` | `true` | Adds every station of your Prix Carburant sensors within the radius, whatever its price. |
-| `sort` | `price` | List order: `price` or `distance`. |
+| `sort` | `price` | Default order: `price` or `distance`. The order picked on the card is remembered on the device. |
+| `show_sort_toggle` | `true` | Show the Price / Distance switch on the card. |
 | `layout` | `map_first` | Display order: `map_first` (map then list) or `list_first` (list then map). |
 | `show_map` | `true` | Show the map. |
 | `show_list` | `true` | Show the list. |

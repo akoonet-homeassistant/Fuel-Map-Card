@@ -1,11 +1,15 @@
-# Fuel Map Card 2026.11.5
+# Fuel Map Card 2026.11.6
 
 ## 🇫🇷 Nouveautés
 
-- **Toutes les stations proches, quel que soit le prix** : nouvelle option `include_sensors` (activée par défaut). La carte ajoute aux 10 stations les moins chères renvoyées par Prix Carburant toutes les stations de vos capteurs Prix Carburant situées dans le rayon. Avec le tri par distance, toutes les stations proches que vous suivez apparaissent, avec leur date de mise à jour.
-- **Jusqu'à 50 stations affichées** (`max_stations`, 10 par défaut).
+- **Tri directement sur la carte** : un sélecteur **Prix | Distance** à côté des onglets de carburant, et les en-têtes « Distance » et « Prix » de la liste sont cliquables. Le choix est mémorisé sur l'appareil.
+- L'option `sort` de l'éditeur devient le tri par défaut ; la modifier remplace le choix mémorisé.
+- Nouvelle option `show_sort_toggle` pour masquer le sélecteur.
+- Colonne Distance un peu plus large pour que l'en-tête reste sur une ligne.
 
 ## 🇬🇧 What's new
 
-- **Every nearby station, whatever the price**: new `include_sensors` option (enabled by default). On top of the 10 cheapest stations returned by Prix Carburant, the card adds every station of your Prix Carburant sensors within the radius. Sorted by distance, all the nearby stations you track are shown, with their update date.
-- **Up to 50 stations shown** (`max_stations`, 10 by default).
+- **Sorting right on the card**: a **Price | Distance** switch next to the fuel tabs, and the list's "Distance" and "Price" headers are clickable. The choice is remembered on the device.
+- The editor's `sort` option becomes the default order; changing it replaces the remembered choice.
+- New `show_sort_toggle` option to hide the switch.
+- Slightly wider Distance column so its header stays on one line.

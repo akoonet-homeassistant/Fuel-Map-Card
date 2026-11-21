@@ -35,9 +35,31 @@ button.icon-btn.spin ha-icon, button.icon-btn.spin .glyph { animation: fmc-spin 
 
 .map-wrap { position: relative; }
 .list-first .map-wrap { margin-top: 4px; }
-.fuels {
-  display: flex; gap: 6px; padding: 0 16px 10px; overflow-x: auto; scrollbar-width: none;
+.toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 0 12px 10px 16px;
 }
+.fuels {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0;
+}
+.fuels[hidden] + .sort { margin-left: auto; }
+.sort {
+  display: inline-flex; flex: none; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--divider-color, rgba(127,127,127,.3));
+}
+button.sort-btn {
+  all: unset; box-sizing: border-box; cursor: pointer;
+  padding: 4px 12px; font-size: 13px; line-height: 20px; color: var(--secondary-text-color);
+}
+button.sort-btn + button.sort-btn { border-left: 1px solid var(--divider-color, rgba(127,127,127,.3)); }
+button.sort-btn.active { background: var(--secondary-background-color, rgba(127,127,127,.15)); color: var(--primary-text-color); font-weight: 600; }
+button.sort-btn:focus-visible { outline: 2px solid var(--primary-color); outline-offset: -2px; }
+button.sort-head {
+  all: unset; cursor: pointer; text-align: right; white-space: nowrap; text-transform: inherit; letter-spacing: inherit;
+  font: inherit; color: inherit;
+}
+button.sort-head.active { color: var(--primary-text-color); font-weight: 600; }
+button.sort-head.active::after { content: "▾"; margin-left: 2px; font-size: 10px; }
+button.sort-head:focus-visible { outline: 2px solid var(--primary-color); }
 .fuels::-webkit-scrollbar { display: none; }
 button.fuel-tab {
   all: unset; box-sizing: border-box; cursor: pointer; flex: none;
@@ -121,7 +143,7 @@ button.fuel-tab.active {
 .list[hidden] { display: none; }
 .row {
   display: grid; align-items: center; column-gap: 10px;
-  grid-template-columns: var(--fmc-cols, 32px minmax(0, 1fr) 58px 64px 34px);
+  grid-template-columns: var(--fmc-cols, 32px minmax(0, 1fr) 76px 64px 34px);
   padding: 7px 12px 7px 16px; cursor: pointer;
   border-left: 3px solid transparent;
   outline: none;
@@ -156,7 +178,7 @@ button.fuel-tab.active {
 .row.high .price { color: #c62828; }
 .list .head {
   display: grid; column-gap: 10px;
-  grid-template-columns: var(--fmc-cols, 32px minmax(0, 1fr) 58px 64px 34px);
+  grid-template-columns: var(--fmc-cols, 32px minmax(0, 1fr) 76px 64px 34px);
   padding: 0 12px 2px 19px; font-size: 11px; text-transform: uppercase;
   letter-spacing: .04em; color: var(--secondary-text-color);
 }

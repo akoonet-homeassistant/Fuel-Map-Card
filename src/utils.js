@@ -16,6 +16,7 @@ export const DEFAULTS = Object.freeze({
   distance: 10,
   max_stations: 10,
   include_sensors: true,
+  show_sort_toggle: true,
   sort: "price",
   show_list: true,
   show_map: true,
@@ -36,7 +37,7 @@ export const DEFAULTS = Object.freeze({
 });
 
 export const TOGGLES = [
-  "dark_filter", "include_sensors", "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
+  "dark_filter", "include_sensors", "show_sort_toggle", "show_map", "show_list", "show_header", "show_refresh_button", "show_recenter_button",
   "show_zoom_controls", "show_car", "show_logo", "show_distance", "show_updated",
   "show_price_colors", "show_directions",
 ];
