@@ -120,3 +120,9 @@ npm run build   # génère dist/fuel-map-card.js
 ## Licence
 
 MIT — voir [LICENSE](LICENSE).
+
+
+## Auteur
+
+Développé par [@jeromeroseau](https://github.com/jeromeroseau) pour [akoonet-homeassistant](https://github.com/akoonet-homeassistant).
+
