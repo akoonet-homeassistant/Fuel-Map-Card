@@ -1,6 +1,6 @@
 {
   "name": "fuel-map-card",
-  "version": "2026.11.2",
+  "version": "2026.11.1",
   "description": "Fuel stations around a vehicle (Prix Carburant) for Home Assistant",
   "directories": {
     "doc": "docs",

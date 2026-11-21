@@ -29,7 +29,7 @@ import {
   brandFromName,
 } from "./utils.js";
 
-const VERSION = "2026.11.2";
+const VERSION = "2026.11.1";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const DEFAULT_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";

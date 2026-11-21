@@ -38,7 +38,7 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.2`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration

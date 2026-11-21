@@ -38,7 +38,7 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 ### Manual installation
 
 1. Copy `dist/fuel-map-card.js` to `/config/www/fuel-map-card/`.
-2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.2`, type **JavaScript module**.
+2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **JavaScript module**.
 3. Reload the browser page.
 
 ## Configuration
