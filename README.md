@@ -124,5 +124,5 @@ MIT — voir [LICENSE](LICENSE).
 
 ## Auteur
 
-Développé par [@jeromeroseau](https://github.com/jeromeroseau) pour [akoonet-homeassistant](https://github.com/akoonet-homeassistant).
+Développé par [@JeromeRoseau](https://github.com/JeromeRoseau) pour [akoonet-homeassistant](https://github.com/akoonet-homeassistant).
 
