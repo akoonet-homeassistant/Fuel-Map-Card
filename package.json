@@ -1,6 +1,6 @@
 {
   "name": "fuel-map-card",
-  "version": "2026.11.3",
+  "version": "2026.11.4",
   "description": "Fuel stations around a vehicle (Prix Carburant) for Home Assistant",
   "directories": {
     "doc": "docs",
@@ -10,7 +10,15 @@
     "build": "rollup -c",
     "test": "vitest run"
   },
-  "keywords": [],
+  "keywords": [
+    "home-assistant",
+    "hacs",
+    "lovelace",
+    "card",
+    "fuel",
+    "carburant",
+    "prix-carburant"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -22,5 +30,13 @@
   "dependencies": {
     "leaflet": "^1.9.4"
   },
-  "type": "module"
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akoonet-homeassistant/Fuel-Map-Card.git"
+  },
+  "homepage": "https://github.com/akoonet-homeassistant/Fuel-Map-Card#readme",
+  "bugs": {
+    "url": "https://github.com/akoonet-homeassistant/Fuel-Map-Card/issues"
+  }
 }

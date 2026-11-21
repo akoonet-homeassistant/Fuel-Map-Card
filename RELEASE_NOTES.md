@@ -1,11 +1,17 @@
-# Fuel Map Card 2026.11.3
+# Fuel Map Card 2026.11.4
 
-## 🇫🇷 Correction
+## 🇫🇷 Préparation HACS
 
-- **La carte restait vide en arrivant sur la vue** : Home Assistant prépare les cartes avant d'afficher la vue, et la recherche n'était alors lancée qu'à l'actualisation suivante (ou avec le bouton Actualiser). Elle démarre désormais dès que la carte s'affiche.
-- Le cadrage de la carte est recalculé quand elle devient visible, au lieu de rester sur un zoom calculé pendant qu'elle était masquée.
+- `hacs.json` : ajout du pays (`FR`), l'intégration Prix Carburant ne couvrant que la France.
+- Bouton « Ouvrir dans HACS » dans le README.
+- Modèles de tickets (anomalie, idée) en français et en anglais.
+- Métadonnées du projet (dépôt, page d'accueil, suivi des tickets) et liens mis à jour.
+- Aucun changement fonctionnel par rapport à la 2026.11.3.
 
-## 🇬🇧 Fix
+## 🇬🇧 HACS preparation
 
-- **The card stayed empty when opening the view**: Home Assistant prepares cards before showing the view, and the search only ran at the next refresh (or with the Refresh button). It now starts as soon as the card is displayed.
-- The map framing is recomputed when the map becomes visible, instead of keeping a zoom computed while it was hidden.
+- `hacs.json`: country added (`FR`), as the Prix Carburant integration only covers France.
+- "Open in HACS" button in the README.
+- Issue templates (bug, feature request) in French and English.
+- Project metadata (repository, homepage, issue tracker) and links updated.
+- No functional change compared to 2026.11.3.

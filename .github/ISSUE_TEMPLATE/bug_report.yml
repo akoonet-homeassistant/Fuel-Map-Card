@@ -1,0 +1,45 @@
+name: 🐞 Bug / Anomalie
+description: Signaler un problème / Report a problem
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de remplir ce formulaire en français ou en anglais.
+        Please fill in this form in French or English.
+  - type: input
+    id: version
+    attributes:
+      label: Version de Fuel Map Card / Fuel Map Card version
+      placeholder: "2026.11.4"
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Version de Home Assistant / Home Assistant version
+      placeholder: "2026.11.0"
+    validations:
+      required: true
+  - type: input
+    id: prixcarburant
+    attributes:
+      label: Version de Prix Carburant / Prix Carburant version
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Ce qui se passe et ce qui était attendu / What happens and what was expected
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration YAML de la carte / Card YAML configuration
+      render: yaml
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console du navigateur / Browser console
+      description: Erreurs affichées dans la console (F12) / Errors shown in the console (F12)
+      render: text

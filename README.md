@@ -38,16 +38,20 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 
 ## Installation
 
-### Via HACS / Marketplace (dépôt personnalisé)
+### Via HACS / Marketplace
+
+[![Ouvrir dans HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=akoonet-homeassistant&repository=Fuel-Map-Card&category=plugin)
+
+Ou en dépôt personnalisé :
 
 1. Ouvrez HACS (ou **Paramètres → Marketplace** depuis Home Assistant 2026.11).
-2. Ajoutez le dépôt personnalisé `https://github.com/akoonet-homeassistant/fuel-map-card`, catégorie **Tableau de bord** (*Dashboard*).
+2. Ajoutez le dépôt personnalisé `https://github.com/akoonet-homeassistant/Fuel-Map-Card`, catégorie **Tableau de bord** (*Dashboard*).
 3. Installez **Fuel Map Card**, puis rechargez la page du navigateur.
 
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.3`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.4`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration

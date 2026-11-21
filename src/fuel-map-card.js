@@ -30,7 +30,7 @@ import {
   brandFromName,
 } from "./utils.js";
 
-const VERSION = "2026.11.3";
+const VERSION = "2026.11.4";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const SENSOR_INDEX_TTL = 5 * 60000;
@@ -754,7 +754,7 @@ if (!customElements.get("fuel-map-card")) {
     name: "Fuel Map Card",
     description: "Stations-service autour d'un véhicule (Prix Carburant) / Fuel stations around a vehicle",
     preview: false,
-    documentationURL: "https://github.com/akoonet-homeassistant/fuel-map-card",
+    documentationURL: "https://github.com/akoonet-homeassistant/Fuel-Map-Card",
   });
   console.info(`%c FUEL-MAP-CARD %c ${VERSION} `, "background:#2e7d32;color:#fff;font-weight:600", "background:#eee;color:#2e7d32");
 }
