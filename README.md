@@ -1,0 +1,89 @@
+# Fuel Map Card
+
+[🇬🇧 English version](README.en.md)
+
+Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'un véhicule** (ou d'une personne), avec leur prix, sur une carte et dans une liste. Les données viennent de l'intégration [Prix Carburant](https://github.com/Aohzan/hass-prixcarburant).
+
+> Projet indépendant, non affilié à l'intégration Prix Carburant ni à son auteur.
+
+![Fuel Map Card](docs/screenshots/card-fr.png)
+
+## Fonctionnalités
+
+- Recherche automatique des stations dans un **rayon réglable** autour de l'entité suivie (`device_tracker`, `person`).
+- **Carte** avec une pastille de prix par station : la moins chère en vert, la plus chère en rouge. Le véhicule reste toujours au premier plan.
+- **Liste** triée par prix ou par distance : logo, nom, ville, distance, prix et date de mise à jour (J+n).
+- **Clic sur une station** dans la liste : la carte se centre dessus et ouvre sa fiche (adresse, prix, lien d'itinéraire).
+- Nouvelle recherche quand le véhicule s'est déplacé, avec un délai minimum pour ne pas solliciter l'API inutilement.
+- Éditeur visuel, thème clair et sombre, interface en **français et en anglais**.
+
+| Station sélectionnée | Thème sombre |
+|---|---|
+| ![Focus](docs/screenshots/card-focus-fr.png) | ![Sombre](docs/screenshots/card-dark-fr.png) |
+
+## Prérequis
+
+- Home Assistant 2024.1 ou plus récent.
+- L'intégration **Prix Carburant** installée et configurée, dans une version qui propose l'action `prix_carburant.find_nearest_stations`.
+- Une entité avec une position GPS (attributs `latitude` et `longitude`).
+
+## Installation
+
+### Via HACS / Marketplace (dépôt personnalisé)
+
+1. Ouvrez HACS (ou **Paramètres → Marketplace** depuis Home Assistant 2026.11).
+2. Ajoutez le dépôt personnalisé `https://github.com/akoonet-homeassistant/fuel-map-card`, catégorie **Tableau de bord** (*Dashboard*).
+3. Installez **Fuel Map Card**, puis rechargez la page du navigateur.
+
+### Installation manuelle
+
+1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.1`, type **Module JavaScript**.
+3. Rechargez la page du navigateur.
+
+## Configuration
+
+La carte se configure dans l'éditeur visuel (« Fuel Map Card » dans la liste des cartes) ou en YAML :
+
+```yaml
+type: custom:fuel-map-card
+entity: device_tracker.ma_voiture
+fuel: E10
+distance: 10
+```
+
+| Option | Défaut | Description |
+|---|---|---|
+| `entity` | — | **Obligatoire.** Entité à suivre (`device_tracker`, `person`). |
+| `fuel` | `E10` | `E10`, `SP95`, `SP98`, `Gazole`, `E85` ou `GPLc`. |
+| `distance` | `10` | Rayon de recherche en km (1 à 50). |
+| `max_stations` | `10` | Nombre de stations affichées (1 à 10). |
+| `sort` | `price` | Tri de la liste : `price` (prix) ou `distance`. |
+| `show_map` | `true` | Afficher la carte. |
+| `show_list` | `true` | Afficher la liste. |
+| `map_height` | `300` | Hauteur de la carte en pixels. |
+| `refresh_interval` | `30` | Nouvelle recherche au moins toutes les X minutes. |
+| `min_move` | `500` | Nouvelle recherche après un déplacement de X mètres. |
+| `min_delay` | `2` | Délai minimum entre deux recherches, en minutes. |
+| `title` | « Stations à proximité » | Titre de la carte. |
+| `tile_url` | OpenStreetMap | Fond de carte personnalisé (URL `https://…/{z}/{x}/{y}.png`). |
+
+## Bon à savoir
+
+- **10 stations au maximum** : l'action Prix Carburant renvoie les 10 stations les moins chères du rayon.
+- **Date de mise à jour** : l'action ne la fournit pas. La carte la reprend des capteurs Prix Carburant déjà configurés (même station, même carburant). Pour une station sans capteur, la colonne affiche « — ». Le logo de l'enseigne vient aussi de ces capteurs.
+- **Distance** : calculée à vol d'oiseau depuis la position de l'entité, pas par la route.
+- La recherche n'a lieu que lorsque la carte est affichée à l'écran. Le bouton ⟳ force une nouvelle recherche.
+- Le fond de carte vient d'OpenStreetMap ; merci de respecter leur [politique d'utilisation](https://operations.osmfoundation.org/policies/tiles/).
+
+## Développement
+
+```bash
+npm install
+npm test        # tests unitaires
+npm run build   # génère dist/fuel-map-card.js
+```
+
+## Licence
+
+MIT — voir [LICENSE](LICENSE).
