@@ -8,6 +8,8 @@
 - Jusqu'à 100 stations affichées (`max_stations`).
 - **Compatible avec les anciennes versions** : la carte détecte si l'action accepte les nouveaux paramètres ; sinon, elle fonctionne comme avant.
 
+🙏 Un grand merci à [@Aohzan](https://github.com/Aohzan), auteur de [Prix Carburant](https://github.com/Aohzan/hass-prixcarburant), pour avoir ajouté si rapidement le nombre de stations et le tri par distance à l'action `find_nearest_stations`, ainsi que la marque et la date de mise à jour dans sa réponse. Cette version n'aurait pas été possible sans lui.
+
 ## 🇬🇧 What's new — Prix Carburant 3.29 support
 
 - **Every station in the radius**: with Prix Carburant 3.29 or later, the card fetches every station (100 at most) instead of the 10 cheapest. The card's Price / Distance sort covers them all.
@@ -15,3 +17,5 @@
 - **Logos**: the brand returned by Prix Carburant is used to show the right logo, even when the station name has no brand.
 - Up to 100 stations shown (`max_stations`).
 - **Works with older versions**: the card detects whether the action accepts the new parameters; otherwise it works as before.
+
+🙏 Many thanks to [@Aohzan](https://github.com/Aohzan), author of [Prix Carburant](https://github.com/Aohzan/hass-prixcarburant), for so quickly adding the station limit and distance sort to the `find_nearest_stations` action, along with the brand and update date in its response. This release would not have been possible without him.
