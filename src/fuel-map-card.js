@@ -29,9 +29,10 @@ import {
   cityOf,
   brandFromName,
   sensorStations,
+  serviceCapabilities,
 } from "./utils.js";
 
-const VERSION = "2026.11.6";
+const VERSION = "2026.11.7";
 const DOMAIN = "prix_carburant";
 const SERVICE = "find_nearest_stations";
 const SENSOR_INDEX_TTL = 5 * 60000;
@@ -475,6 +476,21 @@ class FuelMapCard extends HTMLElement {
     }
   }
 
+  /**
+   * Avec Prix Carburant 3.29+ : toutes les stations du rayon (jusqu'à 100), triées
+   * par distance, pour que le tri prix / distance de la carte porte sur toutes.
+   * Plus ancien : les 10 moins chères (champs inconnus refusés par l'action).
+   * With 3.29+: every station in the radius (up to 100). Older: the 10 cheapest.
+   */
+  _serviceData(fuel) {
+    const c = this._config;
+    const caps = serviceCapabilities(this._hass?.services?.[DOMAIN]?.[SERVICE]);
+    const data = { entity_id: c.entity, fuel, distance: c.distance };
+    if (caps.limit) data.limit = 100;
+    if (caps.sort) data.sort = "distance";
+    return data;
+  }
+
   /** Une recherche par carburant, en parallèle. One search per fuel, in parallel. */
   async _fetch(pos) {
     const hass = this._hass;
@@ -492,7 +508,7 @@ class FuelMapCard extends HTMLElement {
             type: "call_service",
             domain: DOMAIN,
             service: SERVICE,
-            service_data: { entity_id: c.entity, fuel, distance: c.distance },
+            service_data: this._serviceData(fuel),
             return_response: true,
           }),
         ),
@@ -549,10 +565,14 @@ class FuelMapCard extends HTMLElement {
       if (s.distance == null || Math.abs(d - s.distance) > 0.1) changed = true;
       s.distance = d;
       const m = matchSensor(s, this._sensorIndex, this._active);
-      // Logo : celui du capteur, sinon l'enseigne déduite du nom.
-      // Logo: the sensor's, otherwise the brand guessed from the name.
+      // Date et marque : celles de l'action (3.29+), sinon celles du capteur.
+      // Date and brand: the action's (3.29+), otherwise the sensor's.
+      m.updated = s.apiUpdated || m.updated;
+      m.brand = m.brand || s.apiBrand || null;
+      // Logo : celui du capteur, sinon d'après la marque ou le nom.
+      // Logo: the sensor's, otherwise from the brand or the name.
       if (!m.picture || !m.brand) {
-        const guess = brandFromName(m.brand, s.name, m.sensorName);
+        const guess = brandFromName(m.brand, s.apiBrand, s.name, m.sensorName);
         if (guess) {
           m.brand ||= guess.brand;
           m.picture ||= guess.logo;

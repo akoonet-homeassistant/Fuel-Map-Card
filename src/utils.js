@@ -6,7 +6,7 @@ import { MAP_STYLE_IDS } from "./tiles.js";
 export const FUELS = ["E10", "SP95", "SP98", "Gazole", "E85", "GPLc"];
 
 export const LAYOUTS = ["map_first", "list_first"];
-export const MAX_STATIONS = 50;
+export const MAX_STATIONS = 100;
 
 export const DEFAULTS = Object.freeze({
   fuels: ["E10"],
@@ -132,7 +132,11 @@ export function parseStations(response) {
     const address = typeof s.address === "string" ? s.address.trim().slice(0, 200) : "";
     let name = typeof s.name === "string" ? s.name.trim().slice(0, 120) : "";
     if (!name || name.toLowerCase() === "undefined") name = "";
-    out.push({ id: stationKey(lat, lon), name, address, lat, lon, price });
+    // Champs ajoutés par Prix Carburant 3.29 (absents avant). Fields added by Prix Carburant 3.29.
+    const brand = typeof s.brand === "string" && s.brand.trim() ? s.brand.trim().slice(0, 60) : null;
+    const updated = typeof s.updated_date === "string" && !Number.isNaN(new Date(s.updated_date).getTime()) ? s.updated_date : null;
+    const stationId = Number.isSafeInteger(Number(s.station_id)) ? String(Number(s.station_id)) : null;
+    out.push({ id: stationKey(lat, lon), name, address, lat, lon, price, apiBrand: brand, apiUpdated: updated, stationId });
   }
   return out;
 }
@@ -299,6 +303,15 @@ export function sensorStations(index, fuel, pos, radiusKm, existing = []) {
     out.push({ id, name: s.name || "", address: s.address || "", lat: s.lat, lon: s.lon, price: s.price, fromSensor: true });
   }
   return out;
+}
+
+/**
+ * Paramètres pris en charge par l'action, d'après sa description dans HA.
+ * Parameters supported by the action, from its description in HA.
+ */
+export function serviceCapabilities(service) {
+  const fields = service?.fields || {};
+  return { limit: "limit" in fields, sort: "sort" in fields };
 }
 
 /** Jours calendaires écoulés (J+n). Calendar days elapsed (D+n). */

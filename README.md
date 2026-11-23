@@ -33,7 +33,7 @@ Carte Lovelace pour Home Assistant qui affiche **les stations-service autour d'u
 ## Prérequis
 
 - Home Assistant 2024.1 ou plus récent.
-- L'intégration **Prix Carburant** installée et configurée, dans une version qui propose l'action `prix_carburant.find_nearest_stations`.
+- L'intégration **Prix Carburant** installée et configurée, dans une version qui propose l'action `prix_carburant.find_nearest_stations`. **Version 3.29 ou plus recommandée** : toutes les stations du rayon, avec leur marque et leur date de mise à jour.
 - Une entité avec une position GPS (attributs `latitude` et `longitude`).
 
 ## Installation
@@ -51,7 +51,7 @@ Ou en dépôt personnalisé :
 ### Installation manuelle
 
 1. Copiez `dist/fuel-map-card.js` dans `/config/www/fuel-map-card/`.
-2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.6`, type **Module JavaScript**.
+2. Ajoutez la ressource : **Paramètres → Tableaux de bord → ⋮ → Ressources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.7`, type **Module JavaScript**.
 3. Rechargez la page du navigateur.
 
 ## Configuration
@@ -75,8 +75,8 @@ map_style: osm
 | `entity` | — | **Obligatoire.** Entité à suivre (`device_tracker`, `person`). |
 | `fuels` | `[E10]` | Un ou plusieurs carburants parmi `E10`, `SP95`, `SP98`, `Gazole`, `E85`, `GPLc`. Avec plusieurs carburants, des onglets apparaissent. L'ancienne option `fuel: E10` reste acceptée. |
 | `distance` | `10` | Rayon de recherche en km (1 à 50). |
-| `max_stations` | `10` | Nombre de stations affichées (1 à 50). |
-| `include_sensors` | `true` | Ajoute toutes les stations de vos capteurs Prix Carburant situées dans le rayon, quel que soit leur prix. |
+| `max_stations` | `10` | Nombre de stations affichées (1 à 100). |
+| `include_sensors` | `true` | Utile avant Prix Carburant 3.29 : ajoute les stations de vos capteurs situées dans le rayon, quel que soit leur prix. |
 | `sort` | `price` | Tri par défaut : `price` (prix) ou `distance`. Le tri choisi sur la carte est mémorisé sur l'appareil. |
 | `show_sort_toggle` | `true` | Afficher le sélecteur Prix / Distance sur la carte. |
 | `layout` | `map_first` | Ordre d'affichage : `map_first` (carte puis liste) ou `list_first` (liste puis carte). |
@@ -103,9 +103,8 @@ map_style: osm
 
 ## Bon à savoir
 
-- **Stations affichées** : l'action Prix Carburant ne renvoie que les 10 stations les moins chères du rayon. Avec `include_sensors`, la carte y ajoute toutes les stations de vos capteurs Prix Carburant situées dans le rayon, quel que soit leur prix : avec le tri par distance, vous voyez ainsi toutes les stations proches que vous suivez. Hors de la zone de vos capteurs, seules les 10 moins chères apparaissent.
-- **Date de mise à jour** : l'action ne la fournit pas. La carte la reprend des capteurs Prix Carburant déjà configurés (même station, même carburant). Pour une station sans capteur, la colonne affiche « — ».
-- **Logos** : ce sont ceux de l'intégration Prix Carburant. La carte prend le logo du capteur de la station s'il existe, sinon elle reconnaît l'enseigne dans le nom (Intermarché, Carrefour, Super U, Esso, Total…, les « Relais » étant des TotalEnergies). Une station dont le nom ne contient pas l'enseigne et qui n'a pas de capteur garde l'icône générique.
+- **Stations récupérées** : avec Prix Carburant 3.29 ou plus, la carte récupère toutes les stations du rayon (100 au maximum), avec leur marque et leur date de mise à jour ; le tri prix / distance porte sur toutes. Avec une version plus ancienne, l'action ne renvoie que les 10 moins chères, sans date : la carte complète alors avec vos capteurs Prix Carburant (`include_sensors`), et la colonne MAJ affiche « — » pour les autres stations. La carte détecte automatiquement la version.
+- **Logos** : ce sont ceux de l'intégration Prix Carburant. La carte prend le logo du capteur de la station s'il existe, sinon elle reconnaît l'enseigne dans la marque renvoyée (3.29+) ou dans le nom (Intermarché, Carrefour, Super U, Esso, Total…, les « Relais » étant des TotalEnergies). Une station dont le nom ne contient pas l'enseigne et qui n'a pas de capteur garde l'icône générique.
 - **Distance** : calculée à vol d'oiseau depuis la position de l'entité, pas par la route.
 - La recherche n'a lieu que lorsque la carte est affichée à l'écran. Le bouton ⟳ force une nouvelle recherche.
 - **Plusieurs carburants** : une recherche par carburant est lancée à chaque actualisation (6 au maximum).

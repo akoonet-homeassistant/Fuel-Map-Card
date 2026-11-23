@@ -1,15 +1,17 @@
-# Fuel Map Card 2026.11.6
+# Fuel Map Card 2026.11.7
 
-## 🇫🇷 Nouveautés
+## 🇫🇷 Nouveautés — compatibilité Prix Carburant 3.29
 
-- **Tri directement sur la carte** : un sélecteur **Prix | Distance** à côté des onglets de carburant, et les en-têtes « Distance » et « Prix » de la liste sont cliquables. Le choix est mémorisé sur l'appareil.
-- L'option `sort` de l'éditeur devient le tri par défaut ; la modifier remplace le choix mémorisé.
-- Nouvelle option `show_sort_toggle` pour masquer le sélecteur.
-- Colonne Distance un peu plus large pour que l'en-tête reste sur une ligne.
+- **Toutes les stations du rayon** : avec Prix Carburant 3.29 ou plus, la carte récupère toutes les stations (100 au maximum) au lieu des 10 moins chères. Le tri Prix / Distance de la carte porte sur toutes les stations.
+- **Date de mise à jour pour chaque station**, fournie directement par Prix Carburant (plus seulement pour les stations ayant un capteur).
+- **Logos** : la marque renvoyée par Prix Carburant sert à afficher le bon logo, même quand le nom de la station ne contient pas l'enseigne.
+- Jusqu'à 100 stations affichées (`max_stations`).
+- **Compatible avec les anciennes versions** : la carte détecte si l'action accepte les nouveaux paramètres ; sinon, elle fonctionne comme avant.
 
-## 🇬🇧 What's new
+## 🇬🇧 What's new — Prix Carburant 3.29 support
 
-- **Sorting right on the card**: a **Price | Distance** switch next to the fuel tabs, and the list's "Distance" and "Price" headers are clickable. The choice is remembered on the device.
-- The editor's `sort` option becomes the default order; changing it replaces the remembered choice.
-- New `show_sort_toggle` option to hide the switch.
-- Slightly wider Distance column so its header stays on one line.
+- **Every station in the radius**: with Prix Carburant 3.29 or later, the card fetches every station (100 at most) instead of the 10 cheapest. The card's Price / Distance sort covers them all.
+- **Update date for every station**, provided directly by Prix Carburant (no longer only for stations with a sensor).
+- **Logos**: the brand returned by Prix Carburant is used to show the right logo, even when the station name has no brand.
+- Up to 100 stations shown (`max_stations`).
+- **Works with older versions**: the card detects whether the action accepts the new parameters; otherwise it works as before.

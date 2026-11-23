@@ -33,7 +33,7 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 ## Requirements
 
 - Home Assistant 2024.1 or newer.
-- The **Prix Carburant** integration installed and configured, in a version that provides the `prix_carburant.find_nearest_stations` action.
+- The **Prix Carburant** integration installed and configured, in a version that provides the `prix_carburant.find_nearest_stations` action. **Version 3.29 or later recommended**: every station in the radius, with its brand and update date.
 - An entity with a GPS position (`latitude` and `longitude` attributes).
 
 ## Installation
@@ -51,7 +51,7 @@ Or as a custom repository:
 ### Manual installation
 
 1. Copy `dist/fuel-map-card.js` to `/config/www/fuel-map-card/`.
-2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.6`, type **JavaScript module**.
+2. Add the resource: **Settings → Dashboards → ⋮ → Resources**, URL `/local/fuel-map-card/fuel-map-card.js?v=2026.11.7`, type **JavaScript module**.
 3. Reload the browser page.
 
 ## Configuration
@@ -75,8 +75,8 @@ map_style: osm
 | `entity` | — | **Required.** Entity to follow (`device_tracker`, `person`). |
 | `fuels` | `[E10]` | One or more fuels among `E10`, `SP95`, `SP98`, `Gazole`, `E85`, `GPLc`. With several fuels, tabs are shown. The legacy `fuel: E10` option is still accepted. |
 | `distance` | `10` | Search radius in km (1 to 50). |
-| `max_stations` | `10` | Number of stations shown (1 to 50). |
-| `include_sensors` | `true` | Adds every station of your Prix Carburant sensors within the radius, whatever its price. |
+| `max_stations` | `10` | Number of stations shown (1 to 100). |
+| `include_sensors` | `true` | Useful before Prix Carburant 3.29: adds your sensor stations within the radius, whatever their price. |
 | `sort` | `price` | Default order: `price` or `distance`. The order picked on the card is remembered on the device. |
 | `show_sort_toggle` | `true` | Show the Price / Distance switch on the card. |
 | `layout` | `map_first` | Display order: `map_first` (map then list) or `list_first` (list then map). |
@@ -103,9 +103,8 @@ map_style: osm
 
 ## Good to know
 
-- **Stations shown**: the Prix Carburant action only returns the 10 cheapest stations within the radius. With `include_sensors`, the card adds every station of your Prix Carburant sensors within the radius, whatever its price: sorted by distance, you see all the nearby stations you track. Outside your sensors' area, only the 10 cheapest are shown.
-- **Last update date**: the action does not provide it. The card reads it from the Prix Carburant sensors you already have (same station, same fuel). Stations without a sensor show "—".
-- **Logos**: they are the Prix Carburant integration's logos. The card uses the station sensor's logo when there is one, otherwise it recognizes the brand in the name (Intermarché, Carrefour, Super U, Esso, Total…, "Relais" stations being TotalEnergies). A station whose name has no brand and that has no sensor keeps the generic icon.
+- **Stations fetched**: with Prix Carburant 3.29 or later, the card fetches every station in the radius (100 at most), with its brand and update date; the price / distance sort covers them all. With an older version, the action only returns the 10 cheapest, without date: the card then adds your Prix Carburant sensors (`include_sensors`), and the Update column shows "—" for other stations. The card detects the version automatically.
+- **Logos**: they are the Prix Carburant integration's logos. The card uses the station sensor's logo when there is one, otherwise it recognizes the brand returned by the action (3.29+) or in the name (Intermarché, Carrefour, Super U, Esso, Total…, "Relais" stations being TotalEnergies). A station whose name has no brand and that has no sensor keeps the generic icon.
 - **Distance**: straight-line distance from the entity's position, not by road.
 - Searches only run while the card is on screen. The ⟳ button forces a new search.
 - **Several fuels**: one search per fuel runs at each refresh (6 at most).
