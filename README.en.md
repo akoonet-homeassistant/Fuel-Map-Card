@@ -6,7 +6,7 @@
 
 [![Release](https://img.shields.io/github/v/release/akoonet-homeassistant/Fuel-Map-Card)](https://github.com/akoonet-homeassistant/Fuel-Map-Card/releases)
 [![License](https://img.shields.io/github/license/akoonet-homeassistant/Fuel-Map-Card)](LICENSE)
-[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
+[![HACS](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://hacs.xyz)
 
 A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or a person), with their prices, on a map and in a list. Data comes from the [Prix Carburant](https://github.com/Aohzan/hass-prixcarburant) integration (French fuel prices).
 
@@ -42,11 +42,11 @@ A Home Assistant Lovelace card that shows **fuel stations around a vehicle** (or
 
 [![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=akoonet-homeassistant&repository=Fuel-Map-Card&category=plugin)
 
-Or as a custom repository:
+Fuel Map Card is part of the official HACS catalog:
 
 1. Open HACS (or **Settings → Marketplace** since Home Assistant 2026.11).
-2. Add the custom repository `https://github.com/akoonet-homeassistant/Fuel-Map-Card`, category **Dashboard**.
-3. Install **Fuel Map Card**, then reload the browser page.
+2. Search for **Fuel Map Card**.
+3. Install it, then reload the browser page.
 
 ### Manual installation
 
